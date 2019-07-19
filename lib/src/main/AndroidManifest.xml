@@ -9,6 +9,7 @@
     <application>
         <activity
             android:name=".NewUpdateActivity"
+            android:launchMode="singleTop"
             android:theme="@style/newUpdateDialog" />
         <provider
             android:name="android.support.v4.content.FileProvider"

@@ -1,0 +1,5 @@
+<resources>
+    <string name="ApkVersionChecker_app_name">微信</string>
+    <string name="ApkVersionChecker_button_update">更新</string>
+    <string name="ApkVersionChecker_button_retry">重试</string>
+</resources>

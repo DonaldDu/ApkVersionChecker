@@ -28,36 +28,21 @@ class NewUpdateActivity : AppCompatActivity() {
         private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
 
         @JvmStatic
-        fun showNewVersion(activity: Activity, version: IVersion) {
-            if (version.isNew) XIntent.startActivity(activity, NewUpdateActivity::class, version)
+        fun showNewVersion(activity: Activity, version: IVersion, setting: IUpdateSetting? = null) {
+            if (version.isNew) XIntent.startActivity(activity, NewUpdateActivity::class, version, setting)
         }
     }
 
     private lateinit var version: IVersion
-    private lateinit var context: Context
+    private lateinit var setting: IUpdateSetting
+    private var context: Context
     private var startDate = 0L
+    private var autoFinish = false
 
     init {
         startDate = System.currentTimeMillis()
-    }
-
-    private var autoFinish = false
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         finishRepeat()
-        setContentView(R.layout.activity_new_update)
         context = this
-        version = readExtra()!!
-        val appName = version.getAppName(this)
-        val size = formatSizeInMB(version.size)
-        tv_title.text = String.format("发现新版本：%sv%s（%.2fMB）", appName, version.versionName, size)
-        tv_msg.text = version.log
-
-        buttonCommit.setOnClickListener {
-            it.isEnabled = false
-            downloadApk()
-        }
-        setFinishOnTouchOutside(false)
     }
 
     private fun finishRepeat() {
@@ -70,15 +55,27 @@ class NewUpdateActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        updateActivities.remove(this)
-        timer?.cancel()
-        if (version.isForceUpdate && !autoFinish) exitProcess(0)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_new_update)
+        version = readExtra()!!
+        setting = readExtra() ?: object : IUpdateSetting {}
+
+        tv_title.text = setting.getTitle(context, version)
+        tv_msg.text = setting.getMessage(context, version)
+
+        buttonCommit.setOnClickListener {
+            it.isEnabled = false
+            downloadApk()
+        }
+        setFinishOnTouchOutside(false)
     }
 
-    private fun formatSizeInMB(size: Long): Float {
-        return size.toFloat() / 1024 / 1024//byte/kb/mb
+    override fun onDestroy() {
+        super.onDestroy()
+        timer?.cancel()
+        updateActivities.remove(this)
+        if (version.isForceUpdate && !autoFinish) exitProcess(0)
     }
 
     private var retryCount = 0
@@ -86,7 +83,7 @@ class NewUpdateActivity : AppCompatActivity() {
         val updateApkFolder = File(filesDir, "updateApk")
         val apk = "$packageName-c${version.versionCode}.apk"
         val task = DownloadTask.Builder(version.url, updateApkFolder.absolutePath, apk)
-            .setPassIfAlreadyCompleted(version.passIfAlreadyDownloadCompleted())
+            .setPassIfAlreadyCompleted(setting.passIfAlreadyDownloadCompleted())
             .setMinIntervalMillisCallbackProcess(100)
             .build()
         task.enqueue(object : DownloadListener1() {
@@ -95,7 +92,6 @@ class NewUpdateActivity : AppCompatActivity() {
 
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?, model: Listener1Assist.Listener1Model) {
                 println("EndCause $cause")
-                println(task.file?.absolutePath)
                 realCause?.printStackTrace()
 
                 if (cause == EndCause.COMPLETED) {
@@ -103,7 +99,7 @@ class NewUpdateActivity : AppCompatActivity() {
                     finish()
                     installApk(context, task.file!!)
                 } else {
-                    if (retryCount < 3) {
+                    if (retryCount < setting.maxRetryCount()) {
                         retryCount++
                         startRetry()
                     } else reset()
@@ -125,13 +121,13 @@ class NewUpdateActivity : AppCompatActivity() {
     private fun reset() {
         retryCount = 0
         buttonCommit.isEnabled = true
-        buttonCommit.text = "重试"
+        buttonCommit.setText(R.string.ApkVersionChecker_button_retry)
     }
 
     private var timer: CountDownTimer? = null
     private fun startRetry() {
         timer?.cancel()
-        timer = object : CountDownTimer(15_000, 1000) {
+        timer = object : CountDownTimer(15_000, 500) {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             override fun onFinish() {
                 reset()
@@ -152,8 +148,7 @@ class NewUpdateActivity : AppCompatActivity() {
     }
 
     private fun showProgress(currentOffset: Long, totalLength: Long) {
-        val percent = currentOffset * 100f / totalLength
-        buttonCommit.text = String.format("下载中，请稍后（%.2f%%）", percent)
+        buttonCommit.text = setting.getProgress(currentOffset, totalLength)
     }
 
     private fun deleteOldVersions(updateApkFolder: File, newApk: File) {

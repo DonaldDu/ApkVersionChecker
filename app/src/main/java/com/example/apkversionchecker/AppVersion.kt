@@ -1,21 +1,13 @@
 package com.example.apkversionchecker
 
-import android.content.Context
 import com.dhy.versionchecker.IVersion
 
 class AppVersion : IVersion {
-    override fun passIfAlreadyDownloadCompleted() = pass
-
     companion object {
         var forceUpdate = false
-        var pass = false
     }
 
     override fun getVersionCode() = 0
-
-    override fun getAppName(context: Context): String {
-        return context.getString(R.string.app_name)
-    }
 
     override fun getSize() = 76753135L
 
@@ -29,5 +21,9 @@ class AppVersion : IVersion {
 
     override fun isNew() = true
 
-    override fun getLog() = "1. 修复一些bug\n2. 修复一些bug"
+    override fun getLog(): String {
+        return (1..9).toList().joinToString("\n") {
+            "$it. 修复第${it}个bug"
+        }
+    }
 }
