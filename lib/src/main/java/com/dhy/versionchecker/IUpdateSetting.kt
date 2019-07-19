@@ -28,6 +28,6 @@ interface IUpdateSetting : Serializable {
     fun passIfAlreadyDownloadCompleted(): Boolean = true
 
     fun getAppName(context: Context): String {
-        return context.getString(R.string.ApkVersionChecker_app_name)
+        return context.getString(R.string.avc_app_name)
     }
 }

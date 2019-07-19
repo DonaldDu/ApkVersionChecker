@@ -17,19 +17,44 @@ import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.cause.ResumeFailedCause
 import com.liulishuo.okdownload.core.listener.DownloadListener1
 import com.liulishuo.okdownload.core.listener.assist.Listener1Assist
-import kotlinx.android.synthetic.main.activity_new_update.*
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.avc_activity_new_update.*
 import java.io.File
 import kotlin.system.exitProcess
 
 
 class NewUpdateActivity : AppCompatActivity() {
     companion object {
+        private var disposable: Disposable? = null
         @JvmStatic
         private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
 
         @JvmStatic
-        fun showNewVersion(activity: Activity, version: IVersion, setting: IUpdateSetting? = null) {
-            if (version.isNew) XIntent.startActivity(activity, NewUpdateActivity::class, version, setting)
+        fun showNewVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
+            if (version?.isNew == true) XIntent.startActivity(activity, NewUpdateActivity::class, version, setting)
+        }
+
+        @JvmStatic
+        fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, setting: IUpdateSetting? = null) {
+            if (disposable?.isDisposed == false) return
+            disposable = api.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+                    dispose()
+                    if (it.isNew) showNewVersion(activity, it, setting)
+                }, {
+                    dispose()
+                }, {
+                    dispose()
+                })
+        }
+
+        private fun dispose() {
+            disposable?.dispose()
+            disposable = null
         }
     }
 
@@ -57,7 +82,7 @@ class NewUpdateActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_new_update)
+        setContentView(R.layout.avc_activity_new_update)
         version = readExtra()!!
         setting = readExtra() ?: object : IUpdateSetting {}
 
@@ -121,7 +146,7 @@ class NewUpdateActivity : AppCompatActivity() {
     private fun reset() {
         retryCount = 0
         buttonCommit.isEnabled = true
-        buttonCommit.setText(R.string.ApkVersionChecker_button_retry)
+        buttonCommit.setText(R.string.avc_button_retry)
     }
 
     private var timer: CountDownTimer? = null

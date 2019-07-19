@@ -1,14 +1,14 @@
 package com.example.apkversionchecker
 
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.dhy.versionchecker.IUpdateSetting
 import com.dhy.versionchecker.NewUpdateActivity
+import io.reactivex.Observable
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
-
+    private val v = AppVersion()
+    private val update = UpdateSetting()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -19,28 +19,24 @@ class MainActivity : AppCompatActivity() {
             UpdateSetting.pass = isChecked
         }
 
-        val v = AppVersion()
-        val update = UpdateSetting()
         buttonCommit.setOnClickListener {
-            NewUpdateActivity.showNewVersion(this, v, update)
+            checkVersion()
         }
 
         buttonMultTest.setOnClickListener {
-            NewUpdateActivity.showNewVersion(this, v, update)
-            buttonCommit.postDelayed({
-                startActivity(Intent(this, MainActivity::class.java))
-            }, 500)
-            buttonCommit.postDelayed({
-                NewUpdateActivity.showNewVersion(this, v, update)
-            }, 1000)
+            checkVersion()
+            checkVersion()
+            buttonCommit.postDelayed({ checkVersion() }, 500)
+            buttonCommit.postDelayed({ checkVersion() }, 1000)
         }
     }
-}
 
-class UpdateSetting : IUpdateSetting {
-    companion object {
-        var pass = false
+    private fun checkVersion() {
+        val api = Observable.create<AppVersion> {
+            Thread.sleep(1600)
+            it.onNext(v)
+            it.onComplete()
+        }
+        NewUpdateActivity.checkVersion(this, api, update)
     }
-
-    override fun passIfAlreadyDownloadCompleted() = pass
 }
