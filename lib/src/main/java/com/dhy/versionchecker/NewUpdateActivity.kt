@@ -33,10 +33,13 @@ class NewUpdateActivity : AppCompatActivity() {
         private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
 
         @JvmStatic
-        fun showNewVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
+        fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
             if (version?.isNew == true) XIntent.startActivity(activity, NewUpdateActivity::class, version, setting)
         }
 
+        /**
+         * should call this in launch activity and MainActivity
+         * */
         @JvmStatic
         fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, setting: IUpdateSetting? = null) {
             if (disposable?.isDisposed == false) return
@@ -44,7 +47,7 @@ class NewUpdateActivity : AppCompatActivity() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     dispose()
-                    if (it.isNew) showNewVersion(activity, it, setting)
+                    if (it.isNew) showVersion(activity, it, setting)
                 }, {
                     dispose()
                 }, {
