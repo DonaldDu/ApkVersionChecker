@@ -20,9 +20,9 @@ class AppVersion : IVersion {
     override fun getVersionName() = "1.0.0"
 
     override fun isNew() = true
-
+    var msg: String? = null
     override fun getLog(): String {
-        return (1..9).toList().joinToString("\n") {
+        return msg ?: (1..9).toList().joinToString("\n") {
             "$it. 修复第${it}个bug"
         }
     }

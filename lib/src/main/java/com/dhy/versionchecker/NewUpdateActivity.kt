@@ -34,7 +34,11 @@ class NewUpdateActivity : AppCompatActivity() {
 
         @JvmStatic
         fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
-            if (version?.isNew == true) XIntent.startActivity(activity, NewUpdateActivity::class, version, setting)
+            if (version?.isNew == true) {
+                val intent = XIntent(activity, NewUpdateActivity::class, version, setting)
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                activity.startActivity(intent)
+            }
         }
 
         /**
