@@ -13,7 +13,7 @@
             android:theme="@style/avc_newUpdateDialog" />
         <provider
             android:name="com.dhy.versionchecker.ApkFileProvider"
-            android:authorities="${applicationId}"
+            android:authorities="${applicationId}.ApkFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
