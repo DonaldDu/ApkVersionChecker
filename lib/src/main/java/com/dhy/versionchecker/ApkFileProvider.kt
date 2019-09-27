@@ -22,5 +22,6 @@ fun installApk(context: Context, apkFile: File) {
     } else {
         intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive")
     }
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     context.startActivity(intent)
 }

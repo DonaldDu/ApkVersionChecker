@@ -1,6 +1,5 @@
 package com.dhy.versionchecker
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -30,11 +29,12 @@ class NewUpdateActivity : AppCompatActivity() {
         private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
 
         @JvmStatic
-        fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
+        fun showVersion(context: Context, version: IVersion?, setting: IUpdateSetting? = null) {
             if (version?.isNew == true) {
-                val intent = XIntent(activity, NewUpdateActivity::class, version, setting)
+                val intent = XIntent(context, NewUpdateActivity::class, version, setting)
                 intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                activity.startActivity(intent)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
             }
         }
 
@@ -42,13 +42,13 @@ class NewUpdateActivity : AppCompatActivity() {
          * should call this in launch activity and MainActivity
          * */
         @JvmStatic
-        fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, setting: IUpdateSetting? = null) {
+        fun <V : IVersion> checkVersion(context: Context, api: Observable<V>, setting: IUpdateSetting? = null) {
             if (disposable?.isDisposed == false) return
             disposable = api.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({
                     dispose()
-                    if (it.isNew) showVersion(activity, it, setting)
+                    if (it.isNew) showVersion(context, it, setting)
                 }, {
                     dispose()
                 }, {

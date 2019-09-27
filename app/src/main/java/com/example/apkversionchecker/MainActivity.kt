@@ -1,7 +1,6 @@
 package com.example.apkversionchecker
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -57,16 +56,16 @@ class MainActivity : AppCompatActivity() {
             it.onNext(v)
             it.onComplete()
         }
-        checkVersion(this, api, update, Intent(this, MainActivity::class.java))
+        checkVersion(api, update, Intent(this, MainActivity::class.java))
     }
 
     @SuppressLint("CheckResult")
-    private fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, setting: IUpdateSetting? = null, mainIntent: Intent) {
+    private fun <V : IVersion> checkVersion(api: Observable<V>, setting: IUpdateSetting? = null, mainIntent: Intent) {
         api.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 startActivity(mainIntent)
-                if (it.isNew) NewUpdateActivity.showVersion(activity, it, setting)
+                if (it.isNew) NewUpdateActivity.showVersion(this, it, setting)
             }
     }
 }
