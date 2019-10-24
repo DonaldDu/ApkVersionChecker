@@ -124,7 +124,7 @@ class NewUpdateActivity : AppCompatActivity() {
                 realCause?.printStackTrace()
 
                 if (cause == EndCause.COMPLETED) {
-                    deleteOldVersions(updateApkFolder, task.file!!)
+                    deleteOldVersions(task.file!!)
                     finish()
                     installApk(context, task.file!!)
                 } else {
@@ -180,7 +180,8 @@ class NewUpdateActivity : AppCompatActivity() {
         buttonCommit.text = setting.getProgress(currentOffset, totalLength)
     }
 
-    private fun deleteOldVersions(updateApkFolder: File, newApk: File) {
+    private fun deleteOldVersions(newApk: File) {
+        val updateApkFolder = newApk.parentFile
         val newFile = newApk.name
         updateApkFolder.listFiles().forEach {
             if (it.name != newFile) it.delete()
