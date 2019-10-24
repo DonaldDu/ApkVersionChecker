@@ -64,14 +64,12 @@ class NewUpdateActivity : AppCompatActivity() {
 
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
-    private var context: Context
+    private lateinit var context: Context
     private var startDate = 0L
     private var autoFinish = false
 
     init {
         startDate = System.currentTimeMillis()
-        finishRepeat()
-        context = this
     }
 
     private fun finishRepeat() {
@@ -82,6 +80,12 @@ class NewUpdateActivity : AppCompatActivity() {
                 it.finish()
             }
         }
+    }
+
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(newBase)
+        context = this
+        finishRepeat()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,8 +120,7 @@ class NewUpdateActivity : AppCompatActivity() {
             .setMinIntervalMillisCallbackProcess(100)
             .build()
         task.enqueue(object : DownloadListener1() {
-            override fun taskStart(task: DownloadTask, model: Listener1Assist.Listener1Model) {
-            }
+            override fun taskStart(task: DownloadTask, model: Listener1Assist.Listener1Model) {}
 
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?, model: Listener1Assist.Listener1Model) {
                 println("EndCause $cause")
@@ -139,11 +142,9 @@ class NewUpdateActivity : AppCompatActivity() {
                 showProgress(currentOffset, totalLength)
             }
 
-            override fun connected(task: DownloadTask, blockCount: Int, currentOffset: Long, totalLength: Long) {
-            }
+            override fun connected(task: DownloadTask, blockCount: Int, currentOffset: Long, totalLength: Long) {}
 
-            override fun retry(task: DownloadTask, cause: ResumeFailedCause) {
-            }
+            override fun retry(task: DownloadTask, cause: ResumeFailedCause) {}
         })
     }
 
