@@ -62,15 +62,12 @@ class NewUpdateActivity : AppCompatActivity() {
         }
     }
 
+    private lateinit var context: Context
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
-    private lateinit var context: Context
-    private var startDate = 0L
-    private var autoFinish = false
 
-    init {
-        startDate = System.currentTimeMillis()
-    }
+    private var autoFinish = false
+    private val startDate: Long = System.currentTimeMillis()
 
     private fun finishRepeat() {
         updateActivities.add(this)
