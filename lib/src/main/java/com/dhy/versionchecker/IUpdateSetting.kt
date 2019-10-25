@@ -26,6 +26,7 @@ interface IUpdateSetting : Serializable {
     fun maxRetryCount(): Int = 3
 
     fun passIfAlreadyDownloadCompleted(): Boolean = true
+    fun isWifiRequired(): Boolean = true
 
     fun getAppName(context: Context): String {
         return context.getString(R.string.avc_app_name)

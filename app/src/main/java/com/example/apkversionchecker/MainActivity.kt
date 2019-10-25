@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.dhy.versionchecker.IUpdateSetting
 import com.dhy.versionchecker.IVersion
-import com.dhy.versionchecker.NewUpdateActivity
+import com.dhy.versionchecker.VersionUtil
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonCommit.setOnClickListener {
-            NewUpdateActivity.checkVersion(this, Observable.just(v), update)
+            VersionUtil.checkVersion(this, Observable.just(v), false, update)
         }
 
         buttonMultTest.setOnClickListener {
@@ -41,12 +41,15 @@ class MainActivity : AppCompatActivity() {
             checkVersion(2500)
             checkVersion(3000)
         }
+        buttonAutoDownload.setOnClickListener {
+            VersionUtil.checkVersion(this, getApi(100), true, update)
+        }
         tv.text = versionDates.joinToString("\n")
     }
 
-    private fun checkVersion(delay: Long) {
+    private fun getApi(delay: Long): Observable<AppVersion> {
         val f = SimpleDateFormat("yyyy-M-d HH:mm:ss SSS")
-        val api = Observable.create<AppVersion> {
+        return Observable.create<AppVersion> {
             Thread.sleep(delay)
             val head = " startIndex: $index, version date："
             index++
@@ -56,7 +59,10 @@ class MainActivity : AppCompatActivity() {
             it.onNext(v)
             it.onComplete()
         }
-        checkVersion(api, update, Intent(this, MainActivity::class.java))
+    }
+
+    private fun checkVersion(delay: Long) {
+        checkVersion(getApi(delay), update, Intent(this, MainActivity::class.java))
     }
 
     @SuppressLint("CheckResult")
@@ -64,8 +70,10 @@ class MainActivity : AppCompatActivity() {
         api.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                startActivity(mainIntent)
-                if (it.isNew) NewUpdateActivity.showVersion(this, it, setting)
+                if (it.isNew && index == 1) VersionUtil.showVersion(this, it, setting)
+                buttonCommit.postDelayed({
+                    startActivity(mainIntent)
+                }, 1500)
             }
     }
 }
