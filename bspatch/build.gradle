@@ -1,2 +1,3 @@
+//https://gitee.com/DonaldDu/Bspatch
 configurations.maybeCreate("default")
 artifacts.add("default", file('bspatch-release.aar'))
