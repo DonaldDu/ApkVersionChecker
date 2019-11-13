@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import com.dhy.bspatch.PatchUtils
 import com.dhy.versionchecker.IUpdateSetting
 import com.dhy.versionchecker.IVersion
-import com.dhy.versionchecker.PatchUtils
 import com.dhy.versionchecker.VersionUtil
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
             AppVersion.forceUpdate = isChecked
         }
         passIfAlreadyDownloadCompleted.setOnCheckedChangeListener { _, isChecked ->
-            println(PatchUtils.patch("", "", ""))
+            PatchUtils.patch(null, null, null)
             UpdateSetting.pass = isChecked
         }
 
