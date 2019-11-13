@@ -93,23 +93,24 @@ class NewUpdateActivity : AppCompatActivity() {
 
     private var retryCount = 0
     private fun downloadApk() {
-        val updateApkFolder = apkFolder(this)
-        val apk = version.apkFileName(this)
-        val task = DownloadTask.Builder(version.url, updateApkFolder, apk)
+        val task = version.toDownloadTask(context)
             .setPassIfAlreadyCompleted(setting.passIfAlreadyDownloadCompleted())
             .setMinIntervalMillisCallbackProcess(100)
             .build()
+
         task.enqueue(object : DownloadListener1() {
             override fun taskStart(task: DownloadTask, model: Listener1Assist.Listener1Model) {}
 
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?, model: Listener1Assist.Listener1Model) {
                 println("EndCause $cause")
                 realCause?.printStackTrace()
-
                 if (cause == EndCause.COMPLETED) {
-                    task.file!!.deleteOldApkVersions()
-                    installApk(context, task.file!!)
-                    finish()
+                    VersionUtil.patchApk(context, version, task.file!!, {
+                        installApk(context, it)
+                        finish()
+                    }, {
+                        startRetry()
+                    })
                 } else {
                     if (retryCount < setting.maxRetryCount()) {
                         retryCount++
@@ -157,7 +158,11 @@ class NewUpdateActivity : AppCompatActivity() {
         timer!!.start()
     }
 
+    /**
+     * 下载完成后一直显示99.99%，以便给增量更新合成新件提供时间。如果不是增量包，就会关闭进度框和当前页，然后跳转到新页面。
+     * */
     private fun showProgress(currentOffset: Long, totalLength: Long) {
-        buttonCommit.text = setting.getProgress(currentOffset, totalLength)
+        val offset = if (currentOffset >= totalLength) (totalLength * 0.9999f).toLong() else currentOffset
+        buttonCommit.text = setting.getProgress(offset, totalLength)
     }
 }

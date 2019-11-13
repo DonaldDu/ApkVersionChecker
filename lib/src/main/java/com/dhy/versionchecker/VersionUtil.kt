@@ -13,6 +13,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.io.File
 
 
 object VersionUtil {
@@ -69,8 +70,7 @@ object VersionUtil {
     }
 
     private fun download(context: Context, version: IVersion, setting: IUpdateSetting? = null, retryCount: Int = 3) {
-        val updateApkFolder = apkFolder(context)
-        val task = DownloadTask.Builder(version.url, updateApkFolder, version.apkFileName(context))
+        val task = version.toDownloadTask(context)
             .setPassIfAlreadyCompleted(setting?.passIfAlreadyDownloadCompleted() ?: true)
             .setWifiRequired(setting?.isWifiRequired() ?: true)
             .build()
@@ -81,8 +81,12 @@ object VersionUtil {
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?) {
                 if (cause == EndCause.COMPLETED) {
                     unregisterNetworkReceiver(context)
-                    task.file?.deleteOldApkVersions()
-                    showVersion(context, version, setting)
+
+                    patchApk(context, version, task.file!!, {
+                        showVersion(context, version, setting)
+                    }, {
+                        download(context, version, setting, retryCount)
+                    })
                 } else {
                     if (retryCount > 0) {
                         download(context, version, setting, retryCount - 1)
@@ -90,6 +94,37 @@ object VersionUtil {
                 }
             }
         })
+    }
+
+    private fun File.isPathFile(): Boolean {
+        return absolutePath.contains(".patch")
+    }
+
+    internal fun patchApk(context: Context, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
+        if (file.isPathFile()) {
+            val oldApkPath = context.getInstalledApkInfo()!!.applicationInfo.sourceDir
+            val newApk = File(file.parentFile, version.apkFileName(context))
+
+            Thread {
+                val ok = PatchUtils.patch(oldApkPath, newApk.absolutePath, file.absolutePath)
+                val fine = if (ok == 0) {
+                    val pv = PatchVersion(version.patchUrl!!)
+                    SignUtils.checkMd5(newApk, pv.md5)
+                } else false
+
+                if (fine) {
+                    newApk.deleteOldApkVersions()
+                    installApk(newApk)
+                } else {
+                    newApk.delete()
+                    newApk.createNewFile()
+                    retry()
+                }
+            }.start()
+        } else {
+            file.deleteOldApkVersions()
+            installApk(file)
+        }
     }
 
     private fun unregisterNetworkReceiver(context: Context) {
@@ -115,9 +150,3 @@ object VersionUtil {
         }
     }
 }
-
-val Context.isNetworkConnected: Boolean
-    get() {
-        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-        return cm?.activeNetworkInfo?.isConnected == true
-    }

@@ -9,7 +9,10 @@ public interface IVersion extends Serializable {
     long getSize();
 
     @NonNull
-    String getUrl();
+    String getFullUrl();
+
+    @Nullable
+    String getPatchUrl();
 
     boolean isForceUpdate();
 

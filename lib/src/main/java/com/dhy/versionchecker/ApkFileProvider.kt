@@ -26,18 +26,6 @@ fun installApk(context: Context, apkFile: File) {
     context.startActivity(intent)
 }
 
-internal fun IVersion.apkFileName(context: Context): String {
-    return "${context.packageName}-c${versionCode}.apk"
-}
-
 internal fun apkFolder(context: Context): String {
     return File(context.filesDir, "updateApk").absolutePath
-}
-
-internal fun File.deleteOldApkVersions() {
-    val updateApkFolder = parentFile
-    val newFile = name
-    updateApkFolder.listFiles().forEach {
-        if (it.name != newFile) it.delete()
-    }
 }

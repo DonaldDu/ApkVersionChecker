@@ -9,7 +9,7 @@ android {
         applicationId "com.example.apkversionchecker"
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 1
+        versionCode 20
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
