@@ -3,6 +3,10 @@ package com.example.apkversionchecker
 import com.dhy.versionchecker.IVersion
 
 class AppVersion : IVersion {
+    override fun getPatchSize(): Long {
+        return size
+    }
+
     override fun getPatchUrl(): String? {
         return "http://www.wwvas.com/apk/32cfe55d85a28dca0c15689c7dddb4a3-20v208.patch.apk"
     }

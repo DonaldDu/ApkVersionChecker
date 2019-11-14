@@ -29,6 +29,10 @@ internal fun IVersion.apkFileName(context: Context): String {
     return "${context.packageName}_c${versionCode}.apk"
 }
 
+internal fun IVersion.getApkFileSize(): Long {
+    return if (patchUrl.isNullOrEmpty()) size else patchSize
+}
+
 internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
     val updateApkFolder = apkFolder(context)
     val newApkName = apkFileName(context)

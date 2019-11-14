@@ -4,7 +4,6 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "29.0.1"
     defaultConfig {
         applicationId "com.example.apkversionchecker"
         minSdkVersion 15
@@ -12,6 +11,9 @@ android {
         versionCode 20
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        packagingOptions {
+            exclude 'META-INF/**.kotlin_module'
+        }
     }
     buildTypes {
         release {

@@ -14,6 +14,8 @@ public interface IVersion extends Serializable {
     @Nullable
     String getPatchUrl();
 
+    long getPatchSize();
+
     boolean isForceUpdate();
 
     @NonNull

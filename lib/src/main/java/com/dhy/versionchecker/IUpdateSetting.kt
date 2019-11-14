@@ -6,7 +6,7 @@ import java.io.Serializable
 interface IUpdateSetting : Serializable {
     fun getTitle(context: Context, version: IVersion): String {
         val appName = getAppName(context)
-        val size = formatSizeInMB(version.size)
+        val size = formatSizeInMB(version.getApkFileSize())
         return String.format("发现新版本：%sv%s（%.2fMB）", appName, version.versionName, size)
     }
 
