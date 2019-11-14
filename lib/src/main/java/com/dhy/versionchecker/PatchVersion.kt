@@ -1,5 +1,7 @@
 package com.dhy.versionchecker
 
+import android.content.Context
+
 internal class PatchVersion(patchFileUrl: String) {
     val md5: String
     val name: String
@@ -21,5 +23,13 @@ internal class PatchVersion(patchFileUrl: String) {
             oldVersion = 0
             newVersion = 0
         }
+    }
+}
+
+internal fun PatchVersion?.isValidPatch(context: Context): Boolean {
+    return if (this == null) false
+    else {
+        val info = context.getInstalledApkInfo()
+        oldVersion == info!!.currentVersionCode
     }
 }
