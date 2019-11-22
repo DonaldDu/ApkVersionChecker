@@ -50,13 +50,13 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
     val newApk = File(updateApkFolder, newApkName)
 
     return if (newApk.exists()) {
-        DownloadTask.Builder(fullUrl, updateApkFolder, newApkName)
+        DownloadTask.Builder(url, updateApkFolder, newApkName)
     } else {
         val pv = if (patchUrl.isNullOrEmpty()) null else PatchVersion(patchUrl!!)
         if (pv.isValidPatch(context)) {
             DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.name)
         } else {
-            DownloadTask.Builder(fullUrl, updateApkFolder, newApkName)
+            DownloadTask.Builder(url, updateApkFolder, newApkName)
         }
     }
 }

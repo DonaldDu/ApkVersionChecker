@@ -9,7 +9,7 @@ public interface IVersion extends Serializable {
     long getSize();
 
     @NonNull
-    String getFullUrl();
+    String getUrl();
 
     @Nullable
     String getPatchUrl();

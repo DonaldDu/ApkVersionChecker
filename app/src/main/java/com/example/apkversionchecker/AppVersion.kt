@@ -19,7 +19,7 @@ class AppVersion : IVersion {
 
     override fun getSize() = 76753135L
 
-    override fun getFullUrl(): String {
+    override fun getUrl(): String {
         return "http://www.wwvas.com/apk/PUCHE-debug_v3.2.1.1.208-c208_master-d695845.apk"
     }
 
