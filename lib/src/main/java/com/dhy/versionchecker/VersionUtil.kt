@@ -138,6 +138,7 @@ object VersionUtil {
     private fun registerNetworkReceiver(context: Context) {
         if (networkReceiver == null) {
             networkReceiver = NetworkConnectChangedReceiver()
+            @Suppress("DEPRECATION")
             val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             context.registerReceiver(networkReceiver, filter)
         }

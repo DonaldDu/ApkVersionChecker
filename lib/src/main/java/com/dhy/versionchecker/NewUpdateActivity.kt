@@ -2,10 +2,15 @@ package com.dhy.versionchecker
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Environment
 import android.support.v7.app.AppCompatActivity
+import com.dhy.xintent.Waterfall
 import com.dhy.xintent.readExtra
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
@@ -54,12 +59,44 @@ class NewUpdateActivity : AppCompatActivity() {
         tv_msg.text = setting.getMessage(context, version)
 
         buttonCommit.setOnClickListener {
-            it.isEnabled = false
-            downloadApk()
+            checkDownloadApk()
         }
         setFinishOnTouchOutside(false)
 
         if (!autoFinish) initReshow()
+    }
+
+    private fun checkDownloadApk() {
+        Waterfall.flow {
+            when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
+                    next()
+                }
+                else -> {
+                    if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
+                        if (hasFilePermission(true)) {
+                            next()
+                        }
+                    } else {
+                        downloadApkWithBrowser()
+                    }
+                }
+            }
+        }.flow {
+            buttonCommit.isEnabled = false
+            downloadApk()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (hasFilePermission(false)) checkDownloadApk()
+    }
+
+    private fun downloadApkWithBrowser() {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(version.url))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
     }
 
     private val lifecycleCallbacks: ActivityLifecycleCallbacks2 = object : ActivityLifecycleCallbacks2 {
@@ -106,7 +143,7 @@ class NewUpdateActivity : AppCompatActivity() {
                 realCause?.printStackTrace()
                 if (cause == EndCause.COMPLETED) {
                     VersionUtil.patchApk(context, version, task.file!!, {
-                        installApk(context, it)
+                        installApk(it)
                         finish()
                     }, {
                         startRetry()

@@ -4,13 +4,14 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.dhy.versionchecker.IUpdateSetting
-import com.dhy.versionchecker.IVersion
-import com.dhy.versionchecker.VersionUtil
+import android.util.Log
+import com.dhy.versionchecker.*
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import org.apache.commons.io.FileUtils
+import java.io.File
 import java.text.SimpleDateFormat
 
 class MainActivity : AppCompatActivity() {
@@ -44,7 +45,16 @@ class MainActivity : AppCompatActivity() {
         buttonAutoDownload.setOnClickListener {
             VersionUtil.checkVersion(this, getApi(100), true, update)
         }
+        btInstallTest.setOnClickListener {
+            if (hasFilePermission(true)) {
+                val path = getInstalledApkPath()!!
+                val apk = File(apkFolder(), "mine.apk")
+                FileUtils.copyFile(File(path), apk)
+                installApk(apk)
+            }
+        }
         tv.text = versionDates.joinToString("\n")
+        Log.i("TAG", "staticDir " + staticDir())
     }
 
     private fun getApi(delay: Long): Observable<AppVersion> {

@@ -1,13 +1,19 @@
 package com.dhy.versionchecker
 
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Build
+import android.support.v4.app.ActivityCompat
 import android.text.TextUtils
 import com.liulishuo.okdownload.DownloadTask
 import java.io.File
+
+fun Context.getInstalledApkPath(pn: String = packageName): String? {
+    return getInstalledApkInfo(pn)?.applicationInfo?.sourceDir
+}
 
 fun Context.getInstalledApkInfo(pn: String = packageName): PackageInfo? {
     if (TextUtils.isEmpty(pn)) return null
@@ -45,7 +51,7 @@ fun Context.isValidPatch(patchUrl: String?, newVersion: Int): Boolean {
 }
 
 internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
-    val updateApkFolder = apkFolder(context)
+    val updateApkFolder = context.apkFolder()!!.absolutePath
     val newApkName = apkFileName(context)
     val newApk = File(updateApkFolder, newApkName)
 
@@ -74,4 +80,17 @@ internal fun File.deleteOldApkVersions() {
     updateApkFolder.listFiles().forEach {
         if (it.name != newFile) it.delete()
     }
+}
+
+fun Activity.hasFilePermission(requestPermissions: Boolean): Boolean {
+    val filePermissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
+    } else {
+        arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    }
+    val ok = filePermissions.find {
+        ActivityCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+    } == null
+    if (!ok && requestPermissions) ActivityCompat.requestPermissions(this, filePermissions, 1)
+    return ok
 }

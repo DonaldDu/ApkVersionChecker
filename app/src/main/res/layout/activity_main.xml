@@ -50,5 +50,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Auto Download" />
+
+        <Button
+            android:id="@+id/btInstallTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="测试安装应用" />
     </LinearLayout>
 </RelativeLayout>

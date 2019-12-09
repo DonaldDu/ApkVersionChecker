@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.support.v4.content.FileProvider
 import java.io.File
 
@@ -12,20 +13,42 @@ class ApkFileProvider : FileProvider()
 /**
  * @param apkFile should be in folder 'filesDir/updateApk/'
  * */
-fun installApk(context: Context, apkFile: File) {
+fun Context.installApk(apkFile: File) {
     val intent = Intent(Intent.ACTION_VIEW)
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-        val contentUri = FileProvider.getUriForFile(context, context.packageName + ".ApkFileProvider", apkFile)
-        intent.setDataAndType(contentUri, "application/vnd.android.package-archive")
+    val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        FileProvider.getUriForFile(this, "$packageName.ApkFileProvider", apkFile)
     } else {
-        intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive")
+        Uri.fromFile(apkFile)
     }
+    intent.setDataAndType(uri, "application/vnd.android.package-archive")
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    context.startActivity(intent)
+    startActivity(intent)
 }
 
-internal fun apkFolder(context: Context): String {
-    return File(context.filesDir, "updateApk").absolutePath
+fun Context.apkFolder(): File? {
+    return when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
+            File(filesDir, "updateApk")
+        }
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+        }
+        else -> {
+            staticDir()
+        }
+    }
+}
+
+/**
+ * externalCacheDir: sdCard/android/data/packageName/cache
+ * staticDir: sdCard/android/static/packageName
+ * */
+fun Context.staticDir(): File? {
+    val path = externalCacheDir?.absolutePath ?: return null
+    val data = path.substring(0, path.indexOf(packageName))
+    val android = File(data).parent
+    return File(android, "static/${packageName}")
 }
