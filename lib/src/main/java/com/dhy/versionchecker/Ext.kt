@@ -2,6 +2,7 @@ package com.dhy.versionchecker
 
 import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -93,4 +94,11 @@ fun Activity.hasFilePermission(requestPermissions: Boolean): Boolean {
     } == null
     if (!ok && requestPermissions) ActivityCompat.requestPermissions(this, filePermissions, 1)
     return ok
+}
+
+fun Context.getActivity(): Activity? {
+    return if (this is ContextWrapper) {
+        if (this is Activity) this
+        else baseContext.getActivity()
+    } else null
 }

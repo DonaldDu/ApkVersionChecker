@@ -29,7 +29,6 @@ class NewUpdateActivity : AppCompatActivity() {
     private lateinit var context: Context
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
-
     private var autoFinish = false
     private val startDate: Long = System.currentTimeMillis()
 
@@ -69,14 +68,11 @@ class NewUpdateActivity : AppCompatActivity() {
     private fun checkDownloadApk() {
         Waterfall.flow {
             when {
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
-                    next()
-                }
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> next()
                 else -> {
                     if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED) {
-                        if (hasFilePermission(true)) {
-                            next()
-                        }
+                        if (hasFilePermission(true)) next()
+                        else downloadApkWithBrowser()
                     } else {
                         downloadApkWithBrowser()
                     }
@@ -103,7 +99,7 @@ class NewUpdateActivity : AppCompatActivity() {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity !is NewUpdateActivity) {
                 application.unregisterActivityLifecycleCallbacks(this)
-                VersionUtil.showVersion(context, version, setting)
+                VersionUtil.showVersion(activity, version, setting)
             }
         }
     }

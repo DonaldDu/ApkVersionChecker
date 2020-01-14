@@ -55,6 +55,10 @@ class MainActivity : AppCompatActivity() {
         }
         tv.text = versionDates.joinToString("\n")
         Log.i("TAG", "staticDir " + staticDir())
+
+        btDownladingNewPageTest.setOnClickListener {
+
+        }
     }
 
     private fun getApi(delay: Long): Observable<AppVersion> {

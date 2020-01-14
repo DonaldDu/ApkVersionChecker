@@ -1,5 +1,6 @@
 package com.dhy.versionchecker
 
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -23,12 +24,11 @@ object VersionUtil {
     private var setting: IUpdateSetting? = null
     private var networkReceiver: NetworkConnectChangedReceiver? = null
     @JvmStatic
-    fun showVersion(context: Context, version: IVersion?, setting: IUpdateSetting? = null) {
+    fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
         if (version?.isNew == true) {
-            val intent = XIntent(context, NewUpdateActivity::class, version, setting)
+            val intent = XIntent(activity, NewUpdateActivity::class, version, setting)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
+            activity.startActivity(intent)
         }
     }
 
@@ -36,10 +36,10 @@ object VersionUtil {
      * should call this in launch activity and MainActivity
      * */
     @JvmStatic
-    fun <V : IVersion> checkVersion(context: Context, api: Observable<V>, autoDownload: Boolean, setting: IUpdateSetting?) {
+    fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, autoDownload: Boolean, setting: IUpdateSetting?) {
         checkVersion(api) {
-            if (autoDownload) autoDownload(context, it, setting)
-            else showVersion(context, it, setting)
+            if (autoDownload) autoDownload(activity, it, setting)
+            else showVersion(activity, it, setting)
         }
     }
 
@@ -63,15 +63,15 @@ object VersionUtil {
     }
 
     @JvmStatic
-    fun autoDownload(context: Context, version: IVersion, setting: IUpdateSetting? = null) {
+    fun autoDownload(activity: Activity, version: IVersion, setting: IUpdateSetting? = null) {
         this.version = version
         this.setting = setting
-        registerNetworkReceiver(context)
-        download(context, version, setting)
+        registerNetworkReceiver(activity)
+        download(activity, version, setting)
     }
 
-    private fun download(context: Context, version: IVersion, setting: IUpdateSetting? = null, retryCount: Int = 3) {
-        val task = version.toDownloadTask(context)
+    private fun download(activity: Activity, version: IVersion, setting: IUpdateSetting? = null, retryCount: Int = 3) {
+        val task = version.toDownloadTask(activity)
             .setPassIfAlreadyCompleted(setting?.passIfAlreadyDownloadCompleted() ?: true)
             .setWifiRequired(setting?.isWifiRequired() ?: true)
             .build()
@@ -81,16 +81,16 @@ object VersionUtil {
 
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?) {
                 if (cause == EndCause.COMPLETED) {
-                    unregisterNetworkReceiver(context)
+                    unregisterNetworkReceiver(activity)
 
-                    patchApk(context, version, task.file!!, {
-                        showVersion(context, version, setting)
+                    patchApk(activity, version, task.file!!, {
+                        showVersion(activity, version, setting)
                     }, {
-                        download(context, version, setting, retryCount)
+                        download(activity, version, setting, retryCount)
                     })
                 } else {
                     if (retryCount > 0) {
-                        download(context, version, setting, retryCount - 1)
+                        download(activity, version, setting, retryCount - 1)
                     }
                 }
             }
@@ -135,19 +135,19 @@ object VersionUtil {
         }
     }
 
-    private fun registerNetworkReceiver(context: Context) {
+    private fun registerNetworkReceiver(activity: Activity) {
         if (networkReceiver == null) {
-            networkReceiver = NetworkConnectChangedReceiver()
+            networkReceiver = NetworkConnectChangedReceiver(activity)
             @Suppress("DEPRECATION")
             val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-            context.registerReceiver(networkReceiver, filter)
+            activity.registerReceiver(networkReceiver, filter)
         }
     }
 
-    private class NetworkConnectChangedReceiver : BroadcastReceiver() {
+    private class NetworkConnectChangedReceiver(val activity: Activity) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (context.isNetworkConnected) {
-                download(context, version!!, setting)
+                download(activity, version!!, setting)
             }
         }
     }

@@ -1,7 +1,7 @@
 package com.dhy.apkpatch.bsdiff;
 
 public class Config {
-    public String newApkFolder = "D:\\ANETU3\\app\\build\\outputs\\apk\\debug";
+    public String newApkFolder = "D:\\ANETU3\\app\\build\\outputs\\apk\\release";
     public String oldApkFolder = "C:\\Users\\Donald\\Videos\\";
 
     /**
