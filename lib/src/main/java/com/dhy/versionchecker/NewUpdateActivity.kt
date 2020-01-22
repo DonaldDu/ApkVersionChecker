@@ -18,6 +18,7 @@ import com.liulishuo.okdownload.core.cause.ResumeFailedCause
 import com.liulishuo.okdownload.core.listener.DownloadListener1
 import com.liulishuo.okdownload.core.listener.assist.Listener1Assist
 import kotlinx.android.synthetic.main.avc_activity_new_update.*
+import java.io.File
 import kotlin.system.exitProcess
 
 
@@ -26,6 +27,7 @@ class NewUpdateActivity : AppCompatActivity() {
         private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
     }
 
+    private val INSTALL_PERMISS_CODE = 1
     private lateinit var context: Context
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
@@ -81,6 +83,7 @@ class NewUpdateActivity : AppCompatActivity() {
         }.flow {
             buttonCommit.isEnabled = false
             downloadApk()
+            if (hasNoProgressData()) showProgress(0, 100)
         }
     }
 
@@ -124,7 +127,18 @@ class NewUpdateActivity : AppCompatActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == INSTALL_PERMISS_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                installApk(apkFile, INSTALL_PERMISS_CODE)
+                finish()
+            } else reset(true)
+        }
+    }
+
     private var retryCount = 0
+    private lateinit var apkFile: File
     private fun downloadApk() {
         val task = version.toDownloadTask(context)
             .setPassIfAlreadyCompleted(setting.passIfAlreadyDownloadCompleted())
@@ -139,8 +153,9 @@ class NewUpdateActivity : AppCompatActivity() {
                 realCause?.printStackTrace()
                 if (cause == EndCause.COMPLETED) {
                     VersionUtil.patchApk(context, version, task.file!!, {
-                        installApk(it)
-                        finish()
+                        apkFile = it
+                        val installed = installApk(it, INSTALL_PERMISS_CODE)
+                        if (installed) finish()
                     }, {
                         startRetry()
                     })
@@ -162,10 +177,11 @@ class NewUpdateActivity : AppCompatActivity() {
         })
     }
 
-    private fun reset() {
+    private fun reset(toInstall: Boolean = false) {
         retryCount = 0
         buttonCommit.isEnabled = true
-        buttonCommit.setText(R.string.avc_button_retry)
+        val action = if (toInstall) R.string.avc_button_install else R.string.avc_button_retry
+        buttonCommit.setText(action)
     }
 
     private var timer: CountDownTimer? = null
@@ -191,11 +207,16 @@ class NewUpdateActivity : AppCompatActivity() {
         timer!!.start()
     }
 
+    private fun hasNoProgressData(): Boolean {
+        return buttonCommit.tag == null
+    }
+
     /**
      * 下载完成后一直显示99.99%，以便给增量更新合成新件提供时间。如果不是增量包，就会关闭进度框和当前页，然后跳转到新页面。
      * */
     private fun showProgress(currentOffset: Long, totalLength: Long) {
         val offset = if (currentOffset >= totalLength) (totalLength * 0.9999f).toLong() else currentOffset
         buttonCommit.text = setting.getProgress(offset, totalLength)
+        buttonCommit.tag = true//got progress data flag
     }
 }

@@ -6,8 +6,13 @@ import java.io.Serializable
 interface IUpdateSetting : Serializable {
     fun getTitle(context: Context, version: IVersion): String {
         val appName = getAppName(context)
-        val size = formatSizeInMB(version.getApkFileSize())
-        return String.format("发现新版本：%sv%s（%.2fMB）", appName, version.versionName, size)
+        val fileSize = version.getApkFileSize()
+        return if (fileSize > 0) {
+            val size = formatSizeInMB(fileSize)
+            String.format("发现新版本：%s v%s（%.2fMB）", appName, version.versionName, size)
+        } else {
+            String.format("发现新版本：%s v%s", appName, version.versionName)
+        }
     }
 
     fun getMessage(context: Context, version: IVersion): String {
@@ -29,6 +34,6 @@ interface IUpdateSetting : Serializable {
     fun isWifiRequired(): Boolean = true
 
     fun getAppName(context: Context): String {
-        return context.getString(R.string.avc_app_name)
+        return context.applicationInfo.loadLabel(context.packageManager).toString()
     }
 }

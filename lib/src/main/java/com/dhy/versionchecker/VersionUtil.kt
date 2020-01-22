@@ -28,6 +28,9 @@ object VersionUtil {
         if (version?.isNew == true) {
             val intent = XIntent(activity, NewUpdateActivity::class, version, setting)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            if (activity.isFinishing) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
             activity.startActivity(intent)
         }
     }

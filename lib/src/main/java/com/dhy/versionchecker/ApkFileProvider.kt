@@ -1,21 +1,25 @@
 package com.dhy.versionchecker
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
 import android.support.v4.content.FileProvider
 import java.io.File
+
 
 class ApkFileProvider : FileProvider()
 
 /**
  * @param apkFile should be in folder 'filesDir/updateApk/'
+ * @return installed or not
  * */
-fun Context.installApk(apkFile: File) {
+fun Activity.installApk(apkFile: File, INSTALL_PERMISS_CODE: Int): Boolean {
+    if (!canRequestPackageInstalls(INSTALL_PERMISS_CODE)) return false
     val intent = Intent(Intent.ACTION_VIEW)
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
     val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
@@ -26,6 +30,21 @@ fun Context.installApk(apkFile: File) {
     intent.setDataAndType(uri, "application/vnd.android.package-archive")
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
+    return true
+}
+
+fun Activity.canRequestPackageInstalls(INSTALL_PERMISS_CODE: Int?): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val ok = packageManager.canRequestPackageInstalls()
+        if (!ok && INSTALL_PERMISS_CODE != null) {
+            val packageURI = Uri.parse("package:$packageName")
+            val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, packageURI)
+            startActivityForResult(intent, INSTALL_PERMISS_CODE)
+        }
+        ok
+    } else {
+        true
+    }
 }
 
 fun Context.apkFolder(): File? {
