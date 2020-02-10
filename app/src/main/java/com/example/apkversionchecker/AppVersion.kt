@@ -11,16 +11,27 @@ class AppVersion : IVersion {
         return null
     }
 
+    override fun setPatchSize(size: Long) {
+
+    }
+
     companion object {
         var forceUpdate = false
     }
 
     override fun getVersionCode() = 0
+    override fun setPatchUrl(url: String?) {
+
+    }
 
     override fun getSize() = 4882533L
 
     override fun getUrl(): String {
         return "http://www.wwvas.com/apk/ApkVersionChecker.apk"
+    }
+
+    override fun getCurrentVersionCode(): Int {
+        return BuildConfig.VERSION_CODE
     }
 
     override fun isForceUpdate() = forceUpdate

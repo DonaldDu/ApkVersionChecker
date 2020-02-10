@@ -37,17 +37,17 @@ internal fun IVersion.apkFileName(context: Context): String {
 }
 
 internal fun IVersion.getApkFileSize(): Long {
-    return if (patchUrl.isNullOrEmpty()) size else patchSize
+    return if (isValidPatch()) patchSize else size
 }
 
 /**
  * 确保增量包是当前版本的，且是最新的（可以超前）
  * */
-fun Context.isValidPatch(patchUrl: String?, newVersion: Int): Boolean {
+fun IVersion.isValidPatch(): Boolean {
     return if (patchUrl.isNullOrEmpty()) false
     else {
-        val pv = PatchVersion(patchUrl)
-        pv.newVersion >= newVersion && pv.isValidPatch(this)
+        val pv = PatchVersion(patchUrl!!)
+        pv.newVersion >= versionCode && pv.oldVersion == currentVersionCode
     }
 }
 
@@ -60,7 +60,7 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
         DownloadTask.Builder(url, updateApkFolder, newApkName)
     } else {
         val pv = if (patchUrl.isNullOrEmpty()) null else PatchVersion(patchUrl!!)
-        if (pv.isValidPatch(context)) {
+        if (isValidPatch()) {
             DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.name)
         } else {
             DownloadTask.Builder(url, updateApkFolder, newApkName)

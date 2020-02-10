@@ -14,7 +14,11 @@ public interface IVersion extends Serializable {
     @Nullable
     String getPatchUrl();
 
+    void setPatchUrl(@Nullable String url);
+
     long getPatchSize();
+
+    void setPatchSize(long size);
 
     boolean isForceUpdate();
 
@@ -22,6 +26,8 @@ public interface IVersion extends Serializable {
     String getVersionName();
 
     int getVersionCode();
+
+    int getCurrentVersionCode();
 
     boolean isNew();
 
