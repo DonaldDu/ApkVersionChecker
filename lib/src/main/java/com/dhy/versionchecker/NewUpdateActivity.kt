@@ -23,35 +23,14 @@ import kotlin.system.exitProcess
 
 
 class NewUpdateActivity : AppCompatActivity() {
-    companion object {
-        private val updateActivities: MutableList<NewUpdateActivity> = mutableListOf()
-    }
-
     private val INSTALL_PERMISS_CODE = 1
     private lateinit var context: Context
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
-    private var autoFinish = false
-    private val startDate: Long = System.currentTimeMillis()
-
-    private fun finishRepeat() {
-        updateActivities.add(this)
-        updateActivities.forEach {
-            if (it.startDate < startDate) {
-                it.autoFinish = true
-                it.finish()
-            }
-        }
-    }
-
-    override fun attachBaseContext(newBase: Context?) {
-        super.attachBaseContext(newBase)
-        context = this
-        finishRepeat()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        context = this
         setContentView(R.layout.avc_activity_new_update)
         version = readExtra()!!
         setting = readExtra() ?: object : IUpdateSetting {}
@@ -63,8 +42,7 @@ class NewUpdateActivity : AppCompatActivity() {
             checkDownloadApk()
         }
         setFinishOnTouchOutside(false)
-
-        if (!autoFinish) initReshow()
+        application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 
     private fun checkDownloadApk() {
@@ -101,27 +79,17 @@ class NewUpdateActivity : AppCompatActivity() {
     private val lifecycleCallbacks: ActivityLifecycleCallbacks2 = object : ActivityLifecycleCallbacks2 {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity !is NewUpdateActivity) {
-                application.unregisterActivityLifecycleCallbacks(this)
                 VersionUtil.showVersion(activity, version, setting)
             }
         }
     }
 
-    private fun initReshow() {
-        application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
-    }
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+        task?.cancel()
         timer?.cancel()
-        updateActivities.remove(this)
-        if (version.isForceUpdate && !autoFinish) {
+        application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+        if (version.isForceUpdate) {
             android.os.Process.killProcess(android.os.Process.myPid())
             exitProcess(0)
         }
@@ -139,13 +107,14 @@ class NewUpdateActivity : AppCompatActivity() {
 
     private var retryCount = 0
     private lateinit var apkFile: File
+    private var task: DownloadTask? = null
     private fun downloadApk() {
-        val task = version.toDownloadTask(context)
+        task = version.toDownloadTask(context)
             .setPassIfAlreadyCompleted(setting.passIfAlreadyDownloadCompleted())
             .setMinIntervalMillisCallbackProcess(100)
             .build()
 
-        task.enqueue(object : DownloadListener1() {
+        task!!.enqueue(object : DownloadListener1() {
             override fun taskStart(task: DownloadTask, model: Listener1Assist.Listener1Model) {}
 
             override fun taskEnd(task: DownloadTask, cause: EndCause, realCause: Exception?, model: Listener1Assist.Listener1Model) {
@@ -154,8 +123,10 @@ class NewUpdateActivity : AppCompatActivity() {
                 if (cause == EndCause.COMPLETED) {
                     VersionUtil.patchApk(context, version, task.file!!, {
                         apkFile = it
-                        val installed = installApk(it, INSTALL_PERMISS_CODE)
-                        if (installed) finish()
+                        if (!isFinishing) {
+                            val installed = installApk(it, INSTALL_PERMISS_CODE)
+                            if (installed) finish()
+                        }
                     }, {
                         startRetry()
                     })

@@ -23,6 +23,7 @@ object VersionUtil {
     private var version: IVersion? = null
     private var setting: IUpdateSetting? = null
     private var networkReceiver: NetworkConnectChangedReceiver? = null
+
     @JvmStatic
     fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
         if (version?.isNew == true) {

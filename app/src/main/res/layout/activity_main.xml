@@ -63,5 +63,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="下载中打开新页面测试" />
+
+        <Button
+            android:id="@+id/btFinishAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Finish All" />
     </LinearLayout>
 </RelativeLayout>

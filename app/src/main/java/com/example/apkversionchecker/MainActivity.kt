@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import com.dhy.versionchecker.*
+import com.dhy.xintent.ActivityKiller
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -65,6 +66,10 @@ class MainActivity : AppCompatActivity() {
         btDownladingNewPageTest.setOnClickListener {
 
         }
+
+        btFinishAll.setOnClickListener {
+            ActivityKiller.killAll()
+        }
     }
 
     private fun getApi(delay: Long): Observable<AppVersion> {
@@ -98,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         api.subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                if (it.isNew && index == 1) VersionUtil.showVersion(this, it, setting)
+                if (it.isNew) VersionUtil.showVersion(this, it, setting)
                 buttonCommit.postDelayed({
                     startActivity(mainIntent)
                 }, 1500)
