@@ -19,6 +19,9 @@ allprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
+    tasks.withType(Javadoc) {
+        enabled = false
+    }
 }
 
 task clean(type: Delete) {
