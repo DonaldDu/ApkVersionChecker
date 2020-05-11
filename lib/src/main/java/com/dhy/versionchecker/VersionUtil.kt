@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import com.dhy.bspatch.PatchUtils
+import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.XIntent
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
@@ -41,6 +42,7 @@ object VersionUtil {
      * */
     @JvmStatic
     fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, autoDownload: Boolean, setting: IUpdateSetting?) {
+        ActivityKiller.init(activity.application)
         checkVersion(api) {
             if (autoDownload) autoDownload(activity, it, setting)
             else showVersion(activity, it, setting)

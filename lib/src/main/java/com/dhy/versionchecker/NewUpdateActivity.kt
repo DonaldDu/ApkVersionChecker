@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
+import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.Waterfall
 import com.dhy.xintent.readExtra
 import com.liulishuo.okdownload.DownloadTask
@@ -90,6 +91,7 @@ class NewUpdateActivity : AppCompatActivity() {
         timer?.cancel()
         application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
         if (version.isForceUpdate) {
+            ActivityKiller.killAll()
             android.os.Process.killProcess(android.os.Process.myPid())
             exitProcess(0)
         }
