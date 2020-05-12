@@ -12,7 +12,7 @@
     <application>
         <activity
             android:name=".NewUpdateActivity"
-            android:launchMode="singleTop"
+            android:launchMode="singleInstance"
             android:theme="@style/avc_newUpdateDialog" />
         <provider
             android:name="com.dhy.versionchecker.ApkFileProvider"

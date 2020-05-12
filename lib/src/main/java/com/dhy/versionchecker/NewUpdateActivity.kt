@@ -78,7 +78,7 @@ class NewUpdateActivity : AppCompatActivity() {
     }
 
     private val lifecycleCallbacks: ActivityLifecycleCallbacks2 = object : ActivityLifecycleCallbacks2 {
-        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        override fun onActivityResumed(activity: Activity) {
             if (activity !is NewUpdateActivity) {
                 VersionUtil.showVersion(activity, version, setting)
             }
