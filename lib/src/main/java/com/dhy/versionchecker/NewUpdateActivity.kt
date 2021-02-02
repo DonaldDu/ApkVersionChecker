@@ -12,6 +12,7 @@ import android.os.Environment
 import android.support.v7.app.AppCompatActivity
 import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.Waterfall
+import com.dhy.xintent.XIntent
 import com.dhy.xintent.readExtra
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
@@ -32,6 +33,9 @@ class NewUpdateActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         context = this
+        if (savedInstanceState != null) {
+            apkFile = XIntent.readSerializableExtra(XIntent(savedInstanceState), File::class.java)
+        }
         setContentView(R.layout.avc_activity_new_update)
         version = readExtra()!!
         setting = readExtra() ?: object : IUpdateSetting {}
@@ -44,6 +48,11 @@ class NewUpdateActivity : AppCompatActivity() {
         }
         setFinishOnTouchOutside(false)
         application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        XIntent.putSerializableExtra(outState, apkFile)
     }
 
     private fun checkDownloadApk() {
@@ -101,14 +110,14 @@ class NewUpdateActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == INSTALL_PERMISS_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                installApk(apkFile, INSTALL_PERMISS_CODE)
+                if (apkFile != null) installApk(apkFile!!, INSTALL_PERMISS_CODE)
                 finish()
             } else reset(true)
         }
     }
 
     private var retryCount = 0
-    private lateinit var apkFile: File
+    private var apkFile: File? = null
     private var task: DownloadTask? = null
     private fun downloadApk() {
         task = version.toDownloadTask(context)

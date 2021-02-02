@@ -12,7 +12,7 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         packagingOptions {
-            exclude 'META-INF/**.kotlin_module'
+//            exclude 'META-INF/**.kotlin_module'
         }
     }
     buildTypes {
@@ -39,4 +39,7 @@ dependencies {
     implementation project(path: ':lib')
     implementation 'com.squareup.okhttp3:okhttp:4.7.2'
     implementation 'commons-io:commons-io:2.7'
+    implementation("com.github.DonaldDu:XIntent:1.5.4") {
+        exclude group: 'com.github.DonaldDu', module: 'XPreferences'
+    }
 }
