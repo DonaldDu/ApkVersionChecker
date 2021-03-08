@@ -109,10 +109,8 @@ class NewUpdateActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == INSTALL_PERMISS_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (apkFile != null) installApk(apkFile!!, INSTALL_PERMISS_CODE)
-                finish()
-            } else reset(true)
+            if (resultCode == Activity.RESULT_OK) installApk(apkFile)
+            else reset(true)
         }
     }
 
@@ -134,10 +132,7 @@ class NewUpdateActivity : AppCompatActivity() {
                 if (cause == EndCause.COMPLETED) {
                     VersionUtil.patchApk(context, version, task.file!!, {
                         apkFile = it
-                        if (!isFinishing) {
-                            val installed = installApk(it, INSTALL_PERMISS_CODE)
-                            if (installed) finish()
-                        }
+                        installApk(it)
                     }, {
                         startRetry()
                     })
@@ -157,6 +152,16 @@ class NewUpdateActivity : AppCompatActivity() {
 
             override fun retry(task: DownloadTask, cause: ResumeFailedCause) {}
         })
+    }
+
+    private fun installApk(file: File?) {
+        if (file != null && !isFinishing) {
+            val installed = installApk(file, INSTALL_PERMISS_CODE)
+            if (installed) {
+                application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+                finish()
+            }
+        }
     }
 
     private fun reset(toInstall: Boolean = false) {
