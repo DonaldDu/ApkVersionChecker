@@ -61,11 +61,16 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
     } else {
         val pv = if (patchUrl.isNullOrEmpty()) null else PatchVersion(patchUrl!!)
         if (isValidPatch()) {
-            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.name)
+            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.name).fixConnectionError()
         } else {
-            DownloadTask.Builder(url, updateApkFolder, newApkName)
+            DownloadTask.Builder(url, updateApkFolder, newApkName).fixConnectionError()
         }
     }
+}
+
+private fun DownloadTask.Builder.fixConnectionError(): DownloadTask.Builder {
+    if (Build.VERSION.SDK_INT >= 29) setConnectionCount(1)
+    return this
 }
 
 internal val PackageInfo.currentVersionCode: Int
