@@ -13,7 +13,7 @@ interface ActivityLifecycleCallbacks2 : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityDestroyed(activity: Activity) {}
 
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle?) {}
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
     override fun onActivityStopped(activity: Activity) {}
 
