@@ -47,6 +47,13 @@ class NewUpdateActivity : AppCompatActivity() {
         application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        if (!version.isForceUpdate) {
+            application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         XIntent.with(outState).putSerializableExtra(apkFile)
