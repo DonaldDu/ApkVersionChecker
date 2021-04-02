@@ -10,10 +10,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Environment
 import android.support.v7.app.AppCompatActivity
-import com.dhy.xintent.ActivityKiller
-import com.dhy.xintent.Waterfall
-import com.dhy.xintent.XIntent
-import com.dhy.xintent.readExtra
+import com.dhy.xintent.*
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.cause.ResumeFailedCause
@@ -34,7 +31,7 @@ class NewUpdateActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         context = this
         if (savedInstanceState != null) {
-            apkFile = XIntent.readSerializableExtra(XIntent(savedInstanceState), File::class.java)
+            apkFile = XIntent.with(savedInstanceState).readExtra()
         }
         setContentView(R.layout.avc_activity_new_update)
         version = readExtra()!!
@@ -52,7 +49,7 @@ class NewUpdateActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        XIntent.putSerializableExtra(outState, apkFile)
+        XIntent.with(outState).putSerializableExtra(apkFile)
     }
 
     private fun checkDownloadApk() {
