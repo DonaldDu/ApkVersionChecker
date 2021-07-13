@@ -5,11 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.CountDownTimer
-import android.os.Environment
-import android.support.v7.app.AppCompatActivity
+import android.os.*
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.dhy.xintent.*
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
@@ -22,21 +20,32 @@ import kotlin.system.exitProcess
 
 
 class NewUpdateActivity : AppCompatActivity() {
+    companion object {
+        /**
+         * 已进入系统安装界面，安装中。。。
+         * */
+        private var installing = false
+    }
+
+    private var apkFile: File? = null
+    private val TAG = "NewUpdate"
+    private val showLog = false
     private val INSTALL_PERMISS_CODE = 1
     private lateinit var context: Context
     private lateinit var version: IVersion
     private lateinit var setting: IUpdateSetting
-
+    private val handler = Handler(Looper.getMainLooper())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        context = this
-        if (savedInstanceState != null) {
-            apkFile = XIntent.with(savedInstanceState).readExtra()
-        }
-        setContentView(R.layout.avc_activity_new_update)
         version = readExtra()!!
         setting = readExtra() ?: object : IUpdateSetting {}
-
+        if (installing) {
+            if (showLog) Log.i(TAG, "onCreate: cancel restart NewUpdateActivity when installing")
+            return finish()
+        }
+        if (savedInstanceState != null) restoreInstanceState(savedInstanceState)
+        context = this
+        setContentView(R.layout.avc_activity_new_update)
         tv_title.text = setting.getTitle(context, version)
         tv_msg.text = setting.getMessage(context, version)
 
@@ -47,16 +56,28 @@ class NewUpdateActivity : AppCompatActivity() {
         application.registerActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        if (!version.isForceUpdate) {
-            application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        XIntent.with(outState).putSerializableExtra(apkFile, installing)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        restoreInstanceState(savedInstanceState)
+    }
+
+    private fun restoreInstanceState(savedInstanceState: Bundle) {
+        XIntent.with(savedInstanceState).apply {
+            apkFile = readExtra()
+            installing = readExtra() ?: false
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        XIntent.with(outState).putSerializableExtra(apkFile)
+    override fun onBackPressed() {
+        super.onBackPressed()
+        if (!version.isForceUpdate) {
+            unregisterActivityLifecycleCallbacks()
+        }
     }
 
     private fun checkDownloadApk() {
@@ -92,8 +113,12 @@ class NewUpdateActivity : AppCompatActivity() {
 
     private val lifecycleCallbacks: ActivityLifecycleCallbacks2 = object : ActivityLifecycleCallbacks2 {
         override fun onActivityResumed(activity: Activity) {
+            if (showLog) Log.i(TAG, "onActivityResumed: ${activity.javaClass.name}")
             if (activity !is NewUpdateActivity) {
-                VersionUtil.showVersion(activity, version, setting)
+                handler.removeCallbacksAndMessages(null)
+                handler.postDelayed({
+                    VersionUtil.showVersion(activity, version, setting)
+                }, 500)
             }
         }
     }
@@ -102,10 +127,10 @@ class NewUpdateActivity : AppCompatActivity() {
         super.onDestroy()
         task?.cancel()
         timer?.cancel()
-        application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+        unregisterActivityLifecycleCallbacks()
         if (version.isForceUpdate) {
             ActivityKiller.killAll()
-            android.os.Process.killProcess(android.os.Process.myPid())
+            Process.killProcess(Process.myPid())
             exitProcess(0)
         }
     }
@@ -113,13 +138,15 @@ class NewUpdateActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == INSTALL_PERMISS_CODE) {
-            if (resultCode == Activity.RESULT_OK) installApk(apkFile)
-            else reset(true)
+            if (resultCode == Activity.RESULT_OK) {
+                handler.removeCallbacksAndMessages(null)
+                if (showLog) Log.i(TAG, "onActivityResult end installApk")
+                installApk(apkFile)
+            } else reset(true)
         }
     }
 
     private var retryCount = 0
-    private var apkFile: File? = null
     private var task: DownloadTask? = null
     private fun downloadApk() {
         task = version.toDownloadTask(context)
@@ -136,6 +163,8 @@ class NewUpdateActivity : AppCompatActivity() {
                 if (cause == EndCause.COMPLETED) {
                     VersionUtil.patchApk(context, version, task.file!!, {
                         apkFile = it
+
+                        if (showLog) Log.i(TAG, "downloadApk end installApk")
                         installApk(it)
                     }, {
                         startRetry()
@@ -162,10 +191,16 @@ class NewUpdateActivity : AppCompatActivity() {
         if (file != null && !isFinishing) {
             val installed = installApk(file, INSTALL_PERMISS_CODE)
             if (installed) {
-                application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
+                installing = true
+                unregisterActivityLifecycleCallbacks()
                 finish()
             }
         }
+    }
+
+    private fun unregisterActivityLifecycleCallbacks() {
+        handler.removeCallbacksAndMessages(null)
+        application.unregisterActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 
     private fun reset(toInstall: Boolean = false) {

@@ -3,20 +3,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     resourcePrefix "avc_"
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 1
         versionName "1.4.6"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        def PUBLISH_GROUP_ID = 'com.github.DonaldDu'
-        def PUBLISH_ARTIFACT_ID = rootProject.name
-        kotlinOptions.freeCompilerArgs += ['-module-name', "${PUBLISH_GROUP_ID}_${PUBLISH_ARTIFACT_ID}"]
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     sourceSets {
         main { jniLibs.srcDirs = ['libs'] }
@@ -29,15 +23,15 @@ android {
     }
 }
 
-mavenPublish("com.github.DonaldDu:ApkVersionChecker:${android.defaultConfig.versionName}")
+mavenPublish("com.github.DonaldDu:${rootProject.name}:10.0.0")
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    api 'com.android.support:appcompat-v7:28.0.0'
+    api 'androidx.appcompat:appcompat:1.2.0'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation("com.github.DonaldDu:XIntent:1.7.1") {
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation("com.github.DonaldDu:XIntent:1.7.2") {
         exclude group: 'com.github.DonaldDu', module: 'XPreferences'
     }
     implementation 'com.liulishuo.okdownload:okdownload:1.0.7'

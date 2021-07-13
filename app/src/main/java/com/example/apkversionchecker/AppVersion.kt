@@ -3,6 +3,10 @@ package com.example.apkversionchecker
 import com.dhy.versionchecker.IVersion
 
 class AppVersion : IVersion {
+    companion object {
+        var forceUpdate = false
+    }
+
     override fun getPatchSize(): Long {
         return size
     }
@@ -15,9 +19,6 @@ class AppVersion : IVersion {
 
     }
 
-    companion object {
-        var forceUpdate = false
-    }
 
     override fun getVersionCode() = 0
     override fun setPatchUrl(url: String?) {
@@ -27,7 +28,7 @@ class AppVersion : IVersion {
     override fun getSize() = 4882533L
 
     override fun getUrl(): String {
-        return "http://www.wwvas.com/apk/ApkVersionChecker.apk"
+        return "http://apk.wwvas.com:10000/apk/com.example.apkversionchecker-v1.0_c20_t0.apk"
     }
 
     override fun getCurrentVersionCode(): Int {
