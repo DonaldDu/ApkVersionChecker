@@ -12,15 +12,10 @@ import com.dhy.xintent.XIntent
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.listener.DownloadListener2
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
-import io.reactivex.rxjava3.core.Observable
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.schedulers.Schedulers
 import java.io.File
 
 
 object VersionUtil {
-    private var disposable: Disposable? = null
     private var version: IVersion? = null
     private var setting: IUpdateSetting? = null
     private var networkReceiver: NetworkConnectChangedReceiver? = null
@@ -41,31 +36,12 @@ object VersionUtil {
      * should call this in launch activity and MainActivity
      * */
     @JvmStatic
-    fun <V : IVersion> checkVersion(activity: Activity, api: Observable<V>, autoDownload: Boolean, setting: IUpdateSetting?) {
+    fun checkVersion(activity: Activity, api: RxWrapper<*>, autoDownload: Boolean, setting: IUpdateSetting?) {
         ActivityKiller.init(activity.application)
-        checkVersion(api) {
+        api.call {
             if (autoDownload) autoDownload(activity, it, setting)
             else showVersion(activity, it, setting)
         }
-    }
-
-    private fun <V : IVersion> checkVersion(api: Observable<V>, showVersion: (IVersion) -> Unit) {
-        if (disposable?.isDisposed == false) return
-        disposable = api.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                dispose()
-                if (it.isNew) showVersion(it)
-            }, {
-                dispose()
-            }, {
-                dispose()
-            })
-    }
-
-    private fun dispose() {
-        disposable?.dispose()
-        disposable = null
     }
 
     @JvmStatic

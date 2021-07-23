@@ -40,7 +40,8 @@ class MainActivity : BaseBackupApkFileActivity() {
         }
 
         buttonCommit.setOnClickListener {
-            VersionUtil.checkVersion(this, Observable.just(v), false, update)
+            val wrapperApi = Rx3Wrapper { Observable.just(v) }
+            VersionUtil.checkVersion(this, wrapperApi, false, update)
         }
 
         buttonMultTest.setOnClickListener {
@@ -50,7 +51,8 @@ class MainActivity : BaseBackupApkFileActivity() {
             checkVersion(3000)
         }
         buttonAutoDownload.setOnClickListener {
-            VersionUtil.checkVersion(this, getApi(100), true, update)
+            val wrapperApi = Rx3Wrapper { getApi(100) }
+            VersionUtil.checkVersion(this, wrapperApi, true, update)
         }
         btInstallTest.setOnClickListener {
             val path = getInstalledApkPath()!!
