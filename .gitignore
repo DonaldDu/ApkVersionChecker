@@ -13,3 +13,4 @@
 .externalNativeBuild
 /.idea
 /bspatch/build
+/app/DeployLog.log
