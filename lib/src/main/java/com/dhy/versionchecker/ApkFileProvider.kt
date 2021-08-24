@@ -11,7 +11,17 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 
-class ApkFileProvider : FileProvider()
+class ApkFileProvider : FileProvider() {
+    companion object {
+        fun getFile(context: Context): File {
+            return File(context.filesDir, "updateApk")
+        }
+
+        fun getUri(context: Context, file: File): Uri {
+            return getUriForFile(context, "${context.packageName}.ApkFileProvider", file)
+        }
+    }
+}
 
 /**
  * @param apkFile should be in folder 'filesDir/updateApk/'
@@ -23,9 +33,9 @@ fun Activity.installApk(apkFile: File, INSTALL_PERMISS_CODE: Int): Boolean {
     val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-        FileProvider.getUriForFile(this, "$packageName.ApkFileProvider", apkFile)
+        ApkFileProvider.getUri(this, apkFile)
     } else {
-        Uri.fromFile(apkFile)
+        Uri.fromFile(apkFile)//经测试：7.0以下不能用FileProvider
     }
     intent.setDataAndType(uri, "application/vnd.android.package-archive")
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -50,10 +60,10 @@ fun Activity.canRequestPackageInstalls(INSTALL_PERMISS_CODE: Int?): Boolean {
 fun Context.apkFolder(): File? {
     return when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.N -> {
-            File(filesDir, "updateApk")
+            ApkFileProvider.getFile(this)
         }
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT -> {
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         }
         else -> {
             staticDir()

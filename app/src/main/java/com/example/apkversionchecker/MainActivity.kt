@@ -12,7 +12,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import org.apache.commons.io.FileUtils
 import java.io.File
 import java.text.SimpleDateFormat
 
@@ -58,7 +57,7 @@ class MainActivity : BaseBackupApkFileActivity() {
             val path = getInstalledApkPath()!!
             apkFile = File(apkFolder(), "mine.apk")
             if (apkFile!!.exists()) apkFile!!.delete()
-            FileUtils.copyFile(File(path), apkFile)
+            File(path).copyTo(apkFile!!, true)
             installApk(apkFile!!, INSTALL_PERMISS_CODE)
         }
         tv.text = versionDates.joinToString("\n")
