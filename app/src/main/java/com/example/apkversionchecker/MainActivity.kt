@@ -58,7 +58,7 @@ class MainActivity : BaseBackupApkFileActivity() {
             apkFile = File(apkFolder(), "mine.apk")
             if (apkFile!!.exists()) apkFile!!.delete()
             File(path).copyTo(apkFile!!, true)
-            installApk(apkFile!!, INSTALL_PERMISS_CODE)
+            installApk(apkFile!!)
         }
         tv.text = versionDates.joinToString("\n")
         Log.i("TAG", "staticDir " + staticDir())
@@ -94,7 +94,7 @@ class MainActivity : BaseBackupApkFileActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == INSTALL_PERMISS_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                if (apkFile != null) installApk(apkFile!!, INSTALL_PERMISS_CODE)
+                if (apkFile != null) installApk(apkFile!!)
                 else Toast.makeText(this, "apkFile is null", Toast.LENGTH_LONG).show()
             } else Toast.makeText(this, "install canceled ", Toast.LENGTH_LONG).show()
         }

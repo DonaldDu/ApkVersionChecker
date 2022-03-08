@@ -141,7 +141,7 @@ class NewUpdateActivity : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 handler.removeCallbacksAndMessages(null)
                 if (showLog) Log.i(TAG, "onActivityResult end installApk")
-                installApk(apkFile)
+                startInstallApk(apkFile)
             } else reset(true)
         }
     }
@@ -165,7 +165,7 @@ class NewUpdateActivity : AppCompatActivity() {
                         apkFile = it
 
                         if (showLog) Log.i(TAG, "downloadApk end installApk")
-                        installApk(it)
+                        startInstallApk(it)
                     }, {
                         startRetry()
                     })
@@ -187,14 +187,12 @@ class NewUpdateActivity : AppCompatActivity() {
         })
     }
 
-    private fun installApk(file: File?) {
+    private fun startInstallApk(file: File?) {
         if (file != null && !isFinishing) {
-            val installed = installApk(file, INSTALL_PERMISS_CODE)
-            if (installed) {
-                installing = true
-                unregisterActivityLifecycleCallbacks()
-                finish()
-            }
+            installApk(file)
+            installing = true
+            unregisterActivityLifecycleCallbacks()
+            finish()
         }
     }
 
