@@ -7,5 +7,6 @@ class UpdateSetting : IUpdateSetting {
         var pass = false
     }
 
+    override fun mdLinkTextColorRes(): Int = R.color.colorPrimary
     override fun passIfAlreadyDownloadCompleted() = pass
 }

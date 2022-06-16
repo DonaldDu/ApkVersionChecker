@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.*
+import android.text.method.LinkMovementMethod
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.dhy.xintent.*
@@ -47,7 +48,10 @@ class NewUpdateActivity : AppCompatActivity() {
         context = this
         setContentView(R.layout.avc_activity_new_update)
         tv_title.text = setting.getTitle(context, version)
+
         tv_msg.text = setting.getMessage(context, version)
+        tv_msg.isClickable = true
+        tv_msg.movementMethod = LinkMovementMethod.getInstance()
 
         buttonCommit.setOnClickListener {
             checkDownloadApk()

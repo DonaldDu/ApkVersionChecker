@@ -40,10 +40,12 @@ class AppVersion : IVersion {
     override fun getVersionName() = "1.0.0"
 
     override fun isNew() = true
+    private val logMsg by lazy {
+        (1..8).toList().joinToString("\n") { "$it. 修复第${it}个bug" } +
+                "\n[点击查看详情](https://juejin.cn/user/817692382075102/posts)"
+    }
     var msg: String? = null
     override fun getLog(): String {
-        return msg ?: (1..9).toList().joinToString("\n") {
-            "$it. 修复第${it}个bug"
-        }
+        return msg ?: logMsg
     }
 }

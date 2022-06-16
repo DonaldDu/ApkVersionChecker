@@ -1,10 +1,11 @@
 package com.dhy.versionchecker
 
 import android.content.Context
+import androidx.annotation.ColorRes
 import java.io.Serializable
 
 interface IUpdateSetting : Serializable {
-    fun getTitle(context: Context, version: IVersion): String {
+    fun getTitle(context: Context, version: IVersion): CharSequence {
         val appName = getAppName(context)
         val fileSize = version.getApkFileSize()
         return if (fileSize > 0) {
@@ -15,10 +16,15 @@ interface IUpdateSetting : Serializable {
         }
     }
 
-    fun getMessage(context: Context, version: IVersion): String {
-        return version.log ?: ""
+    fun getMessage(context: Context, version: IVersion): CharSequence {
+        val colorRes = mdLinkTextColorRes()
+        val msg = version.log ?: ""
+        return if (colorRes == null) msg
+        else supportMdLink(context, msg, colorRes)
     }
 
+    @ColorRes
+    fun mdLinkTextColorRes(): Int? = R.color.xintent_theme
     fun getProgress(currentOffset: Long, totalLength: Long): String {
         val percent = currentOffset * 100f / totalLength
         return String.format("%.2f%%", percent)
