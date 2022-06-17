@@ -3,6 +3,7 @@ package com.dhy.versionchecker
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.Browser
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
@@ -36,8 +37,8 @@ internal fun supportMdLink(context: Context, log: String, @ColorRes colorRes: In
 }
 
 private fun Context.openWebUrl(url: String) {
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.data = Uri.parse(url)
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    intent.putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
     startActivity(intent)
 }
 
