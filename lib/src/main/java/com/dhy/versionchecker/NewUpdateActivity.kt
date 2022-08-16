@@ -38,7 +38,12 @@ class NewUpdateActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        version = readExtra()!!
+        val v: IVersion? = readExtra()
+        if (v != null) version = v
+        else {
+            if (showLog) Log.e(TAG, "NewUpdateActivity onCreate: version can't be null")
+            return finish()
+        }
         setting = readExtra() ?: object : IUpdateSetting {}
         if (installing) {
             if (showLog) Log.i(TAG, "onCreate: cancel restart NewUpdateActivity when installing")
