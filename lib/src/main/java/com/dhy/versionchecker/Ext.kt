@@ -61,7 +61,7 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
     } else {
         val pv = if (patchUrl.isNullOrEmpty()) null else PatchVersion(patchUrl!!)
         if (isValidPatch()) {
-            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.name).fixConnectionError()
+            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.fileName).fixConnectionError()
         } else {
             DownloadTask.Builder(url, updateApkFolder, newApkName).fixConnectionError()
         }
