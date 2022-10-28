@@ -80,22 +80,21 @@ object VersionUtil {
     }
 
     private fun File.isPathFile(): Boolean {
-        return absolutePath.contains(".patch")
+        return !PatchVersion.invalidFormat(name)
     }
 
     internal fun patchApk(context: Context, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
         if (file.isPathFile()) {
             val oldApkPath = context.getInstalledApkInfo()!!.applicationInfo.sourceDir
-            val newApk = File(file.parentFile, version.apkFileName(context))
-
+            var newApk = File.createTempFile("bs_merge", ".apk")
             Thread {
-                val ok = PatchUtils.patch(oldApkPath, newApk.absolutePath, file.absolutePath)
-                val fine = if (ok == 0) {
-                    val pv = PatchVersion(version.patchUrl!!)
-                    SignUtils.checkMd5(newApk, pv.md5)
-                } else false
+                val patchOk = PatchUtils.patch(oldApkPath, newApk.absolutePath, file.absolutePath) == 0
+                val md5Ok = patchOk && PatchVersion(version.patchUrl!!).matchMd5(newApk.md5())
 
-                if (fine) {
+                if (md5Ok) {
+                    val finalApk = File(file.parentFile, version.apkFileName(context))
+                    newApk.renameTo(finalApk)
+                    newApk = finalApk
                     newApk.deleteOldApkVersions()
                     installApk(newApk)
                 } else {

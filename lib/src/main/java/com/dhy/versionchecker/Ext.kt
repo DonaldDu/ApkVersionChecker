@@ -59,9 +59,9 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
     return if (newApk.exists()) {
         DownloadTask.Builder(url, updateApkFolder, newApkName)
     } else {
-        val pv = if (patchUrl.isNullOrEmpty()) null else PatchVersion(patchUrl!!)
         if (isValidPatch()) {
-            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv!!.fileName).fixConnectionError()
+            val pv = PatchVersion(patchUrl!!)
+            DownloadTask.Builder(patchUrl!!, updateApkFolder, pv.fileName).fixConnectionError()
         } else {
             DownloadTask.Builder(url, updateApkFolder, newApkName).fixConnectionError()
         }
@@ -81,9 +81,9 @@ internal val PackageInfo.currentVersionCode: Int
     }
 
 internal fun File.deleteOldApkVersions() {
-    val updateApkFolder = parentFile
+    val updateApkFolder = parentFile!!
     val newFile = name
-    updateApkFolder.listFiles().forEach {
+    updateApkFolder.listFiles()!!.forEach {
         if (it.name != newFile) it.delete()
     }
 }
