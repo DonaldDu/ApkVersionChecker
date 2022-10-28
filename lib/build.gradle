@@ -3,10 +3,11 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     resourcePrefix "avc_"
     defaultConfig {
         minSdkVersion 15
+        //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 1
         versionName "1.6.7"//fixme 发布更新时，手动更新版本号
@@ -27,10 +28,10 @@ mavenPublish("com.github.DonaldDu:${rootProject.name}:10.0.0")
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
-    api 'androidx.appcompat:appcompat:1.2.0'
+    api 'androidx.appcompat:appcompat:1.4.2'
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation("com.github.DonaldDu:XIntent:1.7.2") {
         exclude group: 'com.github.DonaldDu', module: 'XPreferences'
     }
