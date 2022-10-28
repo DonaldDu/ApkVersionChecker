@@ -7,8 +7,8 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Build
-import androidx.core.app.ActivityCompat
 import android.text.TextUtils
+import androidx.core.app.ActivityCompat
 import com.liulishuo.okdownload.DownloadTask
 import java.io.File
 
@@ -44,10 +44,10 @@ internal fun IVersion.getApkFileSize(): Long {
  * 确保增量包是当前版本的，且是最新的（可以超前）
  * */
 fun IVersion.isValidPatch(): Boolean {
-    return if (patchUrl.isNullOrEmpty()) false
+    return if (PatchVersion.invalidFormat(patchUrl)) false
     else {
         val pv = PatchVersion(patchUrl!!)
-        pv.newVersion >= versionCode && pv.oldVersion == currentVersionCode
+        pv.newVersion == versionCode && pv.oldVersion == currentVersionCode
     }
 }
 
