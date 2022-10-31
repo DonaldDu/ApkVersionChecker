@@ -1,8 +1,8 @@
-package com.example.apkversionchecker
+package com.example.apkversionchecker.data
 
-import com.dhy.versionchecker.IVersion
+import com.example.apkversionchecker.BuildConfig
 
-class AppVersion : IVersion {
+class AppVersionMock : AppVersion() {
     companion object {
         var forceUpdate = false
     }
@@ -16,13 +16,10 @@ class AppVersion : IVersion {
     }
 
     override fun setPatchSize(size: Long) {
-
     }
 
-
-    override fun getVersionCode() = 0
+    override fun getNewVersionCode() = 0
     override fun setPatchUrl(url: String?) {
-
     }
 
     override fun getSize() = 4882533L
@@ -31,7 +28,7 @@ class AppVersion : IVersion {
         return "http://apk.wwvas.com:10000/apk/com.example.apkversionchecker-v1.0_c20_t0.apk"
     }
 
-    override fun getCurrentVersionCode(): Int {
+    override fun getOldVersionCode(): Int {
         return BuildConfig.VERSION_CODE
     }
 
@@ -40,10 +37,11 @@ class AppVersion : IVersion {
     override fun getVersionName() = "1.0.0"
 
     override fun isNew() = true
-    private val logMsg by lazy {
-        (1..8).toList().joinToString("\n") { "$it. 修复第${it}个bug" } +
-                "\n[点击查看详情](https://juejin.cn/user/817692382075102/posts)"
-    }
+    private val logMsg: String
+        get() {
+            return (1..8).toList().joinToString("\n") { "$it. 修复第${it}个bug" } +
+                    "\n[点击查看详情](https://juejin.cn/user/817692382075102/posts)"
+        }
     var msg: String? = null
     override fun getLog(): String {
         return msg ?: logMsg

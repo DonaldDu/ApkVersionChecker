@@ -35,22 +35,31 @@
             android:text="passIfAlreadyDownloadCompleted" />
 
         <Button
+            android:id="@+id/btPatchTest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BsPatch 下载/合成/安装 测试"
+            android:textAllCaps="false" />
+
+        <Button
             android:id="@+id/buttonCommit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="show" />
+            android:text="显示更新" />
 
         <Button
             android:id="@+id/buttonMultTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="multiple start test" />
+            android:text="并发检查更新 测试"
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/buttonAutoDownload"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Auto Download" />
+            android:text="自动下载更新"
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/btInstallTest"
@@ -62,12 +71,13 @@
             android:id="@+id/btDownladingNewPageTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="下载中打开新页面测试" />
+            android:text="下载中打开新页面 测试" />
 
         <Button
             android:id="@+id/btFinishAll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Finish All" />
+            android:text="Finish All"
+            android:textAllCaps="false" />
     </LinearLayout>
 </RelativeLayout>

@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import com.dhy.versionchecker.*
 import com.dhy.xintent.ActivityKiller
+import com.example.apkversionchecker.data.AppVersionMock
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.schedulers.Schedulers
@@ -22,17 +23,19 @@ class MainActivity : BaseBackupApkFileActivity() {
     }
 
     private val INSTALL_PERMISS_CODE = 1
-    private val v = AppVersion()
+    private val v = AppVersionMock()
     private val update = UpdateSetting()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        AppVersion.forceUpdate = isForceUpdate.isChecked
+        AppVersionMock.forceUpdate = isForceUpdate.isChecked
         isForceUpdate.setOnCheckedChangeListener { _, isChecked ->
-            AppVersion.forceUpdate = isChecked
+            AppVersionMock.forceUpdate = isChecked
         }
-
+        btPatchTest.setOnClickListener {
+            checkAppVersion()
+        }
         UpdateSetting.pass = passIfAlreadyDownloadCompleted.isChecked
         passIfAlreadyDownloadCompleted.setOnCheckedChangeListener { _, isChecked ->
             UpdateSetting.pass = isChecked
@@ -60,7 +63,7 @@ class MainActivity : BaseBackupApkFileActivity() {
             File(path).copyTo(apkFile!!, true)
             installApk(apkFile!!)
         }
-        tv.text = versionDates.joinToString("\n")
+        tv.text = "version_code:${BuildConfig.VERSION_CODE}\n" + versionDates.joinToString("\n")
         Log.i("TAG", "staticDir " + staticDir())
 
         btDownladingNewPageTest.setOnClickListener {
@@ -72,13 +75,13 @@ class MainActivity : BaseBackupApkFileActivity() {
         }
     }
 
-    private fun getApi(delay: Long): Observable<AppVersion> {
+    private fun getApi(delay: Long): Observable<IVersion> {
         val f = SimpleDateFormat("yyyy-M-d HH:mm:ss SSS")
         return Observable.create {
             Thread.sleep(delay)
             val head = " startIndex: $index, version date："
             index++
-            val v = AppVersion()
+            val v = AppVersionMock()
             v.msg = head + f.format(System.currentTimeMillis())
             versionDates.add(v.msg!!)
             it.onNext(v)

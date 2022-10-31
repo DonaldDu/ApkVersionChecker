@@ -1,23 +1,23 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext {
-        ext.kotlin_version = '1.5.21'
-    }
+    ext.kotlin_version = '1.5.20'
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21"
         if (project.hasProperty('apkUploaderClasspath')) with(apkUploaderClasspath)
     }
 }
 
 allprojects {
     repositories {
+        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }

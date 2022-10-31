@@ -18,16 +18,16 @@ public interface IVersion extends Serializable {
 
     long getPatchSize();
 
-    void setPatchSize(long size);
+    void setPatchSize(@NonNull Long size);
 
     boolean isForceUpdate();
 
     @NonNull
     String getVersionName();
 
-    int getVersionCode();
+    int getNewVersionCode();
 
-    int getCurrentVersionCode();
+    int getOldVersionCode();
 
     boolean isNew();
 

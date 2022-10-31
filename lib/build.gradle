@@ -10,7 +10,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 1
-        versionName "1.6.7"//fixme 发布更新时，手动更新版本号
+        versionName "1.7.0"//fixme 发布更新时，手动更新版本号
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     sourceSets {
@@ -24,7 +24,7 @@ android {
     }
 }
 
-mavenPublish("com.github.DonaldDu:${rootProject.name}:10.0.0")
+mavenPublish("com.github.DonaldDu.avc:${project.name}:10.0.0")
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
@@ -41,4 +41,5 @@ dependencies {
 
     compileOnly 'io.reactivex.rxjava3:rxandroid:3.0.0'
     compileOnly 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    api project(path: ':format')
 }

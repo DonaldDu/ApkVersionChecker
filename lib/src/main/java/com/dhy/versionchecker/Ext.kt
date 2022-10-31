@@ -9,6 +9,7 @@ import android.net.ConnectivityManager
 import android.os.Build
 import android.text.TextUtils
 import androidx.core.app.ActivityCompat
+import com.dhy.avc.format.PatchVersion
 import com.liulishuo.okdownload.DownloadTask
 import java.io.File
 
@@ -33,7 +34,7 @@ val Context.isNetworkConnected: Boolean
     }
 
 internal fun IVersion.apkFileName(context: Context): String {
-    return "${context.packageName}_c${versionCode}.apk"
+    return "${context.packageName}_c${newVersionCode}.apk"
 }
 
 internal fun IVersion.getApkFileSize(): Long {
@@ -47,7 +48,7 @@ fun IVersion.isValidPatch(): Boolean {
     return if (PatchVersion.invalidFormat(patchUrl)) false
     else {
         val pv = PatchVersion(patchUrl!!)
-        pv.newVersion == versionCode && pv.oldVersion == currentVersionCode
+        pv.newVersion == newVersionCode && pv.oldVersion == oldVersionCode
     }
 }
 

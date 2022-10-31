@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import com.dhy.avc.format.PatchVersion
 import com.dhy.bspatch.PatchUtils
 import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.XIntent
