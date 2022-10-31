@@ -1,5 +1,5 @@
 apply plugin: 'kotlin'
-mavenPublish("com.github.DonaldDu.avc:${project.name}:10.0.0")
+mavenPublish("com.github.DonaldDu.ApkVersionChecker:${project.name}:10.0.0")
 dependencies {
     testImplementation 'junit:junit:4.13.2'
 }

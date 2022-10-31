@@ -24,7 +24,7 @@ android {
     }
 }
 
-mavenPublish("com.github.DonaldDu.avc:${project.name}:10.0.0")
+mavenPublish("com.github.DonaldDu.ApkVersionChecker:${project.name}:10.0.0")
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.jar'])
