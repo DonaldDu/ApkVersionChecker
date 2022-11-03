@@ -31,15 +31,17 @@ interface IUpdateSetting : Serializable {
     }
 
     private fun formatSizeInMB(size: Long): Float {
-        return size.toFloat() / 1024 / 1024//byte/kb/mb
+        return size.toFloat() / 1024 / 1024//kb/mb
     }
 
     fun maxRetryCount(): Int = 3
 
     fun passIfAlreadyDownloadCompleted(): Boolean = true
-    fun isWifiRequired(): Boolean = true
+    fun isWifiRequired(): Boolean = false
 
     fun getAppName(context: Context): String {
         return context.applicationInfo.loadLabel(context.packageManager).toString()
     }
+
+    fun getMaxPatchMemory(): Long = 1024L * 1024 * 50//MB
 }

@@ -7,9 +7,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import com.dhy.avc.format.PatchVersion
-import com.dhy.bspatch.PatchUtils
 import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.XIntent
+import com.github.sisong.ApkPatch
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.listener.DownloadListener2
@@ -24,7 +24,7 @@ object VersionUtil {
     @JvmStatic
     fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
         if (version?.isNew == true) {
-            val intent = XIntent(activity, NewUpdateActivity::class, version, setting)
+            val intent = XIntent(activity, NewUpdateActivity::class, version, setting.finalValue)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             if (activity.isFinishing) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -38,25 +38,26 @@ object VersionUtil {
      * */
     @JvmStatic
     fun checkVersion(activity: Activity, api: RxWrapper<*>, autoDownload: Boolean, setting: IUpdateSetting?) {
+        val finalValue = setting.finalValue
         ActivityKiller.init(activity.application)
         api.call {
-            if (autoDownload) autoDownload(activity, it, setting)
-            else showVersion(activity, it, setting)
+            if (autoDownload) autoDownload(activity, it, finalValue)
+            else showVersion(activity, it, finalValue)
         }
     }
 
     @JvmStatic
     fun autoDownload(activity: Activity, version: IVersion, setting: IUpdateSetting? = null) {
         this.version = version
-        this.setting = setting
+        this.setting = setting.finalValue
         registerNetworkReceiver(activity)
-        download(activity, version, setting)
+        download(activity, version, this.setting!!)
     }
 
-    private fun download(activity: Activity, version: IVersion, setting: IUpdateSetting? = null, retryCount: Int = 3) {
+    private fun download(activity: Activity, version: IVersion, setting: IUpdateSetting, retryCount: Int = 3) {
         val task = version.toDownloadTask(activity)
-            .setPassIfAlreadyCompleted(setting?.passIfAlreadyDownloadCompleted() ?: true)
-            .setWifiRequired(setting?.isWifiRequired() ?: true)
+            .setPassIfAlreadyCompleted(setting.passIfAlreadyDownloadCompleted())
+            .setWifiRequired(setting.isWifiRequired())
             .build()
 
         task.enqueue(object : DownloadListener2() {
@@ -66,7 +67,7 @@ object VersionUtil {
                 if (cause == EndCause.COMPLETED) {
                     unregisterNetworkReceiver(activity)
 
-                    patchApk(activity, version, task.file!!, {
+                    patchApk(activity, setting.getMaxPatchMemory(), version, task.file!!, {
                         showVersion(activity, version, setting)
                     }, {
                         download(activity, version, setting, retryCount)
@@ -84,30 +85,36 @@ object VersionUtil {
         return !PatchVersion.invalidFormat(name)
     }
 
-    internal fun patchApk(context: Context, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
+    internal fun patchApk(context: Context, maxMemory: Long, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
         if (file.isPathFile()) {
-            val oldApkPath = context.getInstalledApkInfo()!!.applicationInfo.sourceDir
-            var newApk = File.createTempFile("bs_merge", ".apk")
-            Thread {
-                val patchOk = PatchUtils.patch(oldApkPath, newApk.absolutePath, file.absolutePath) == 0
-                val md5Ok = patchOk && PatchVersion(version.patchUrl!!).matchMd5(newApk.md5())
-
-                if (md5Ok) {
-                    val finalApk = File(file.parentFile, version.apkFileName(context))
-                    newApk.renameTo(finalApk)
-                    newApk = finalApk
-                    newApk.deleteOldApkVersions()
-                    installApk(newApk)
-                } else {
-                    newApk.delete()
-                    newApk.createNewFile()
-                    retry()
-                }
-            }.start()
+            patchApkInNewThread(context, maxMemory, version, file, installApk, retry)
         } else {
             file.deleteOldApkVersions()
             installApk(file)
         }
+    }
+
+    private fun patchApkInNewThread(context: Context, maxMemory: Long, version: IVersion, patch: File, installApk: (File) -> Unit, retry: () -> Unit) {
+        val oldApkPath = context.getInstalledApkInfo()!!.applicationInfo.sourceDir
+        var newApk = File.createTempFile("bs_merge", ".apk")
+        Thread {
+            val tmp = File(context.cacheDir, "tmp_${System.currentTimeMillis()}")
+
+            val patchOk = ApkPatch.patch(oldApkPath, patch.absolutePath, newApk.absolutePath, maxMemory, tmp.absolutePath, 3) == 0
+            val md5Ok = patchOk && PatchVersion(version.patchUrl!!).matchMd5(newApk.md5())
+            tmp.deleteRecursively()
+            if (md5Ok) {
+                val finalApk = File(patch.parentFile, version.apkFileName(context))
+                newApk.renameTo(finalApk)
+                newApk = finalApk
+                newApk.deleteOldApkVersions()
+                installApk(newApk)
+            } else {
+                newApk.delete()
+                newApk.createNewFile()
+                retry()
+            }
+        }.start()
     }
 
     private fun unregisterNetworkReceiver(context: Context) {
@@ -129,8 +136,13 @@ object VersionUtil {
     private class NetworkConnectChangedReceiver(val activity: Activity) : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (context.isNetworkConnected) {
-                download(activity, version!!, setting)
+                download(activity, version!!, setting.finalValue)
             }
         }
     }
+
+    private val IUpdateSetting?.finalValue: IUpdateSetting
+        get() {
+            return this ?: object : IUpdateSetting {}
+        }
 }

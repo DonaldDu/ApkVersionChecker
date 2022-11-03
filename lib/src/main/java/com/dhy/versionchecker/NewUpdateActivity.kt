@@ -170,7 +170,7 @@ class NewUpdateActivity : AppCompatActivity() {
                 println("EndCause $cause")
                 realCause?.printStackTrace()
                 if (cause == EndCause.COMPLETED) {
-                    VersionUtil.patchApk(context, version, task.file!!, {
+                    VersionUtil.patchApk(context, setting.getMaxPatchMemory(), version, task.file!!, {
                         apkFile = it
 
                         if (showLog) Log.i(TAG, "downloadApk end installApk")
