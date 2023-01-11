@@ -22,6 +22,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures.buildConfig = false
 }
 
 mavenPublish("com.github.DonaldDu.ApkVersionChecker:${project.name}:10.0.0")
