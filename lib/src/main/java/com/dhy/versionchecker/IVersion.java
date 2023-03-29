@@ -29,6 +29,8 @@ public interface IVersion extends Serializable {
 
     int getOldVersionCode();
 
+    String getOldVersionName();
+
     boolean isNew();
 
     /**

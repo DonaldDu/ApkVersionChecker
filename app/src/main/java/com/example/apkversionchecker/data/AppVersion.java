@@ -83,6 +83,11 @@ public class AppVersion implements Serializable, IVersion {
     }
 
     @Override
+    public String getOldVersionName() {
+        return BuildConfig.VERSION_NAME;
+    }
+
+    @Override
     public boolean isNew() {
         return BuildConfig.VERSION_CODE < versionCode;
     }

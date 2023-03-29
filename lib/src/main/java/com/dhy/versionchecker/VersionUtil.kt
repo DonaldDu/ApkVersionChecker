@@ -101,7 +101,7 @@ object VersionUtil {
             val tmp = File(context.cacheDir, "tmp_${System.currentTimeMillis()}")
 
             val patchOk = ApkPatch.patch(oldApkPath, patch.absolutePath, newApk.absolutePath, maxMemory, tmp.absolutePath, 3) == 0
-            val md5Ok = patchOk && PatchVersion(version.patchUrl!!).matchMd5(newApk.md5())
+            val md5Ok = patchOk && PatchVersion.parse(version.patchUrl!!).matchMd5(newApk.md5())
             tmp.deleteRecursively()
             if (md5Ok) {
                 val finalApk = File(patch.parentFile, version.apkFileName(context))

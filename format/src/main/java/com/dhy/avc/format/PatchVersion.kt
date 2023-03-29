@@ -1,13 +1,16 @@
 package com.dhy.avc.format
 
-class PatchVersion(patchFileUrl: String) {
+class PatchVersion {
     companion object {
         private const val keyMd5 = "Md5"
-        private const val keyOldVersion = "oldVersion"
-        private const val keyNewVersion = "newVersion"
+        private const val keyOldVersion = "ov"
+        private const val keyNewVersion = "nv"
 
-        //差分包文件名：{newApkMd5}-{oldVersionCode}v{newVersionCode}：54621B46C1664DB5BA7127D8F22AFF00-258v300.bsPatch.apk
-        private val reg by lazy { "[^0-9a-zA-Z]?(?<$keyMd5>[0-9a-zA-Z]{32})-(?<$keyOldVersion>[0-9]+)v(?<$keyNewVersion>[0-9]+)\\.bsPatch\\.apk".toRegex() }
+        private const val keyOldVersionName = "ovn"
+        private const val keyNewVersionName = "nvn"
+
+        //差分包文件名：{oldVersionName}v{newVersionName}-{newApkMd5}-{oldVersionCode}v{newVersionCode}：1.0v1.1-54621B46C1664DB5BA7127D8F22AFF00-258v300.bsPatch.apk
+        private val reg by lazy { "[^\\da-zA-Z]?(?<$keyOldVersionName>[\\d.]+)v(?<$keyNewVersionName>[\\d.]+)-(?<$keyMd5>[\\da-zA-Z]{32})-(?<$keyOldVersion>\\d+)v(?<$keyNewVersion>\\d+)\\.bsPatch\\.apk".toRegex() }
         fun invalidFormat(patchFileUrl: String?): Boolean {
             if (patchFileUrl.isNullOrEmpty()) return true
             return reg.find(patchFileUrl) == null
@@ -18,25 +21,34 @@ class PatchVersion(patchFileUrl: String) {
         }
 
         @JvmStatic
-        fun format(newApkMd5: String, oldVersion: Int, newVersion: Int): String {
-            return String.format("%s-%dv%d.bsPatch.apk", newApkMd5.lowercase(), oldVersion, newVersion)
+        fun format(v: PatchVersion): String {
+            return String.format("%sv%s-%s-%dv%d.bsPatch.apk", v.oldVersionName, v.newVersionName, v.newApkMd5?.lowercase(), v.oldVersion, v.newVersion)
+        }
+
+        @JvmStatic
+        fun parse(patchFileUrl: String): PatchVersion {
+            return PatchVersion().apply {
+                val m = reg.find(patchFileUrl)
+                newApkMd5 = m?.groups?.get(keyMd5)?.value
+                oldVersion = m?.groups?.get(keyOldVersion)?.value?.toInt()
+                newVersion = m?.groups?.get(keyNewVersion)?.value?.toInt()
+
+                oldVersionName = m?.groups?.get(keyOldVersionName)?.value
+                newVersionName = m?.groups?.get(keyNewVersionName)?.value
+
+                fileName = format(this)
+            }
         }
     }
 
-    val newApkMd5: String
-    val fileName: String
-    val oldVersion: Int
-    val newVersion: Int
+    var newApkMd5: String? = null
 
-    init {
-        val m = reg.find(patchFileUrl)!!
-        newApkMd5 = m.groups[keyMd5]!!.value
-        oldVersion = m.groups[keyOldVersion]!!.value.toInt()
-        newVersion = m.groups[keyNewVersion]!!.value.toInt()
-        fileName = format(newApkMd5, oldVersion, newVersion)
-    }
+    var oldVersion: Int? = null
+    var newVersion: Int? = null
+    var oldVersionName: String? = null
+    var newVersionName: String? = null
 
-    constructor(newApkMd5: String, oldVersion: Int, newVersion: Int) : this(format(newApkMd5, oldVersion, newVersion))
+    var fileName: String? = null
 
     fun matchMd5(newApkMd5: String): Boolean {
         return newApkMd5.equals(this.newApkMd5, ignoreCase = true)

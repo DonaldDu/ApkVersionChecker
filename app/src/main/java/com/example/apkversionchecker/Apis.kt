@@ -5,6 +5,7 @@ import com.dhy.avc.format.FileType
 import com.dhy.avc.format.PatchVersion
 import com.dhy.versionchecker.Rx3Wrapper
 import com.dhy.versionchecker.VersionUtil
+import com.dhy.versionchecker.isNew
 import com.example.apkversionchecker.data.AppVersion
 import com.example.apkversionchecker.data.ResponseW
 import io.reactivex.rxjava3.core.Observable
@@ -89,7 +90,7 @@ private fun checkPatchVersion(fullApkUpdate: AppVersion): Observable<AppVersion>
         val patchUrl = it.data?.url
         if (PatchVersion.isValidFormat(patchUrl)) {
             val patchVersion = PatchVersion(patchUrl!!)
-            if (patchVersion.oldVersion == fullApkUpdate.oldVersionCode && patchVersion.newVersion == fullApkUpdate.newVersionCode) {
+            if (patchVersion.isNew(fullApkUpdate)) {
                 val patch = it.data!!
                 fullApkUpdate.patchUrl = patchUrl
                 fullApkUpdate.patchSize = patch.size

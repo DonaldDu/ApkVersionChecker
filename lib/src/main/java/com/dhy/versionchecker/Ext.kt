@@ -47,7 +47,7 @@ internal fun IVersion.getApkFileSize(): Long {
 fun IVersion.isValidPatch(): Boolean {
     return if (PatchVersion.invalidFormat(patchUrl)) false
     else {
-        val pv = PatchVersion(patchUrl!!)
+        val pv = PatchVersion.parse(patchUrl!!)
         pv.newVersion == newVersionCode && pv.oldVersion == oldVersionCode
     }
 }
@@ -61,7 +61,7 @@ internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
         DownloadTask.Builder(url, updateApkFolder, newApkName)
     } else {
         if (isValidPatch()) {
-            val pv = PatchVersion(patchUrl!!)
+            val pv = PatchVersion.parse(patchUrl!!)
             DownloadTask.Builder(patchUrl!!, updateApkFolder, pv.fileName).fixConnectionError()
         } else {
             DownloadTask.Builder(url, updateApkFolder, newApkName).fixConnectionError()
@@ -107,4 +107,11 @@ fun Context.getActivity(): Activity? {
         if (this is Activity) this
         else baseContext.getActivity()
     } else null
+}
+
+fun PatchVersion.isNew(v: IVersion): Boolean {
+    return oldVersion == v.oldVersionCode
+            && newVersion == v.newVersionCode
+            && oldVersionName == v.oldVersionName
+            && newVersionName == v.versionName
 }
