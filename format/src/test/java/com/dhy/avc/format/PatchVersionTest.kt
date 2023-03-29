@@ -13,7 +13,7 @@ class PatchVersionTest {
         Assert.assertTrue(PatchVersion.invalidFormat("http//:a.b.c/54621b46c1664db5ba7127d8f22aff00-258v300.bsPatch.apk"))//need VersionName part
 
         val url = "http//:a.b.c/1.0v1.1-54621b46c1664db5ba7127d8f22aff00-258v300.bsPatch.apk"
-        val v = PatchVersion(url)
+        val v = PatchVersion.parse(url)
         Assert.assertEquals("1.0v1.1-54621b46c1664db5ba7127d8f22aff00-258v300.bsPatch.apk", v.fileName)
         Assert.assertTrue(v.matchMd5(md5))
         Assert.assertTrue(v.matchMd5(md5.uppercase()))

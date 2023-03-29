@@ -89,7 +89,7 @@ private fun checkPatchVersion(fullApkUpdate: AppVersion): Observable<AppVersion>
     return Apis.api.checkVersion(BuildConfig.APPLICATION_ID, patchType).map {
         val patchUrl = it.data?.url
         if (PatchVersion.isValidFormat(patchUrl)) {
-            val patchVersion = PatchVersion(patchUrl!!)
+            val patchVersion = PatchVersion.parse(patchUrl!!)
             if (patchVersion.isNew(fullApkUpdate)) {
                 val patch = it.data!!
                 fullApkUpdate.patchUrl = patchUrl
