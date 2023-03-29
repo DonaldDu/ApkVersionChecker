@@ -45,11 +45,15 @@ internal fun IVersion.getApkFileSize(): Long {
  * 确保增量包是当前版本的，且是最新的（可以超前）
  * */
 fun IVersion.isValidPatch(): Boolean {
-    return if (PatchVersion.invalidFormat(patchUrl)) false
-    else {
-        val pv = PatchVersion.parse(patchUrl!!)
-        pv.newVersion == newVersionCode && pv.oldVersion == oldVersionCode
-    }
+    return if (patchUrl.isNullOrEmpty()) false
+    else PatchVersion.parse(patchUrl!!).isNew(this)
+}
+
+fun PatchVersion.isNew(v: IVersion): Boolean {
+    return oldVersion == v.oldVersionCode
+            && newVersion == v.newVersionCode
+            && oldVersionName == v.oldVersionName
+            && newVersionName == v.versionName
 }
 
 internal fun IVersion.toDownloadTask(context: Context): DownloadTask.Builder {
@@ -107,11 +111,4 @@ fun Context.getActivity(): Activity? {
         if (this is Activity) this
         else baseContext.getActivity()
     } else null
-}
-
-fun PatchVersion.isNew(v: IVersion): Boolean {
-    return oldVersion == v.oldVersionCode
-            && newVersion == v.newVersionCode
-            && oldVersionName == v.oldVersionName
-            && newVersionName == v.versionName
 }
