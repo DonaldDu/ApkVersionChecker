@@ -10,7 +10,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 1
-        versionName "1.7.1"//fixme 发布更新时，手动更新版本号
+        versionName "1.7.6"//fixme 发布更新时，手动更新版本号
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
     sourceSets {

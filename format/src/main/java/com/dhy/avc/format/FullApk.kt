@@ -2,10 +2,10 @@ package com.dhy.avc.format
 
 object FullApk {
     /**
-     * {appShortName}_v{versionName}_c{versionCode}_{MD5}.apk, eg: "ECT_v1.0_c1-202cb962ac59075b964b07152d234b70.apk"
+     * {appShortName}-v{versionName}_c{versionCode}_{gitVersion}-{MD5}.apk, eg: "ECT-v1.0_c1_fs465-202cb962ac59075b964b07152d234b70.apk"
      */
     @JvmStatic
-    fun formatName(appShortName: String, versionName: String, versionCode: Int, apkMd5: String): String {
-        return String.format("%s_v%s_c%d-%s.apk", appShortName, versionName, versionCode, apkMd5)
+    fun formatName(appShortName: String, versionName: String, versionCode: Int, gitVersion: String, apkMd5: String): String {
+        return String.format("%s-v%s_c%d_%s-%s.apk", appShortName, versionName, versionCode, gitVersion, apkMd5)
     }
 }
