@@ -68,6 +68,12 @@
             android:text="测试安装应用" />
 
         <Button
+            android:id="@+id/btDownloadError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="测试下载失败" />
+
+        <Button
             android:id="@+id/btDownladingNewPageTest"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

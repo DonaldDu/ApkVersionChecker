@@ -110,6 +110,7 @@ object VersionUtil {
                 newApk.deleteOldApkVersions()
                 installApk(newApk)
             } else {
+                version.patchUrl = null//合成后补丁校验不匹配，则清空删除补丁链接，使用完整包下载。
                 newApk.delete()
                 newApk.createNewFile()
                 retry()

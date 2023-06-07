@@ -7,6 +7,7 @@ class AppVersionMock : AppVersion() {
         var forceUpdate = false
     }
 
+    var apkUrl: String = "http://apk.wwvas.com:10000/apk/com.example.apkversionchecker-v1.0_c20_t0.apk"
     override fun getPatchSize(): Long {
         return size
     }
@@ -25,7 +26,7 @@ class AppVersionMock : AppVersion() {
     override fun getSize() = 4882533L
 
     override fun getUrl(): String {
-        return "http://apk.wwvas.com:10000/apk/com.example.apkversionchecker-v1.0_c20_t0.apk"
+        return apkUrl
     }
 
     override fun getOldVersionCode(): Int {

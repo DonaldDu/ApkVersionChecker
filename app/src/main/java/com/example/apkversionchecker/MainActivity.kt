@@ -73,6 +73,14 @@ class MainActivity : BaseBackupApkFileActivity() {
         btFinishAll.setOnClickListener {
             ActivityKiller.killAll()
         }
+
+        btDownloadError.setOnClickListener {
+            val v = AppVersionMock()
+            AppVersionMock.forceUpdate = false
+            v.apkUrl = "http://apk.wwvas.com:10000/apk/404.apk"
+            val wrapperApi = Rx3Wrapper { Observable.just(v) }
+            VersionUtil.checkVersion(this, wrapperApi, false, update)
+        }
     }
 
     private fun getApi(delay: Long): Observable<IVersion> {

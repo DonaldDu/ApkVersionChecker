@@ -176,7 +176,7 @@ class NewUpdateActivity : AppCompatActivity() {
                         if (showLog) Log.i(TAG, "downloadApk end installApk")
                         startInstallApk(it)
                     }, {
-                        startRetry()
+                        runOnUiThread { startRetry() }//合成补丁检验未通过后，返回调用此方法时，需要在UI线程调用。
                     })
                 } else {
                     if (retryCount < setting.maxRetryCount()) {
