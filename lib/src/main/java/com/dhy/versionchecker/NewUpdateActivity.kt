@@ -5,17 +5,29 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.CountDownTimer
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.os.Process
 import android.text.method.LinkMovementMethod
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.dhy.xintent.*
+import com.dhy.xintent.ActivityKiller
+import com.dhy.xintent.Waterfall
+import com.dhy.xintent.XIntent
+import com.dhy.xintent.putSerializableExtra
+import com.dhy.xintent.readExtra
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.cause.ResumeFailedCause
 import com.liulishuo.okdownload.core.listener.DownloadListener1
 import com.liulishuo.okdownload.core.listener.assist.Listener1Assist
-import kotlinx.android.synthetic.main.avc_activity_new_update.*
+import kotlinx.android.synthetic.main.avc_activity_new_update.buttonCommit
+import kotlinx.android.synthetic.main.avc_activity_new_update.tv_msg
+import kotlinx.android.synthetic.main.avc_activity_new_update.tv_title
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -176,7 +188,7 @@ class NewUpdateActivity : AppCompatActivity() {
                         if (showLog) Log.i(TAG, "downloadApk end installApk")
                         startInstallApk(it)
                     }, {
-                        runOnUiThread { startRetry() }//合成补丁检验未通过后，返回调用此方法时，需要在UI线程调用。
+                        startRetry()//合成补丁检验未通过后，返回调用此方法时，需要在UI线程调用。
                     })
                 } else {
                     if (retryCount < setting.maxRetryCount()) {
@@ -219,25 +231,29 @@ class NewUpdateActivity : AppCompatActivity() {
 
     private var timer: CountDownTimer? = null
     private fun startRetry() {
-        timer?.cancel()
-        timer = object : CountDownTimer(15_000, 500) {
-            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            override fun onFinish() {
-                reset()
-            }
+        runOnUiThread {
+            timer?.cancel()
+            timer = MyCountDownTimer()
+            timer!!.start()
+        }
+    }
 
-            override fun onTick(millisUntilFinished: Long) {
-                if (isNetworkAvailable()) {
-                    cancel()
-                    downloadApk()
-                }
-            }
+    private inner class MyCountDownTimer : CountDownTimer(15_000, 500) {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        override fun onFinish() {
+            reset()
+        }
 
-            fun isNetworkAvailable(): Boolean {
-                return cm.activeNetworkInfo?.isConnected == true
+        override fun onTick(millisUntilFinished: Long) {
+            if (isNetworkAvailable()) {
+                cancel()
+                downloadApk()
             }
         }
-        timer!!.start()
+
+        fun isNetworkAvailable(): Boolean {
+            return cm.activeNetworkInfo?.isConnected == true
+        }
     }
 
     private fun hasNoProgressData(): Boolean {
