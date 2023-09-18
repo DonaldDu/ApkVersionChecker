@@ -10,11 +10,8 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 1
-        versionName "1.8.0"//fixme 发布更新时，手动更新版本号
+        versionName "1.8.1"//fixme 发布更新时，手动更新版本号
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
-    }
-    sourceSets {
-        main { jniLibs.srcDirs = ['libs'] }
     }
     buildTypes {
         release {
@@ -28,7 +25,6 @@ android {
 mavenPublish("com.github.DonaldDu.ApkVersionChecker:${project.name}:10.0.0")
 
 dependencies {
-    implementation "com.github.sisong:hpatch:4.6.7"//发布到公司内部服务器上的
     api 'androidx.appcompat:appcompat:1.4.2'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
