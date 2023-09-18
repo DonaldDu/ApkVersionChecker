@@ -9,8 +9,14 @@ interface IUpdateSetting : Serializable {
         val appName = getAppName(context)
         val fileSize = version.getApkFileSize()
         return if (fileSize > 0) {
-            val size = formatSizeInMB(fileSize)
-            String.format("发现新版本：%s v%s（%.2fMB）", appName, version.versionName, size)
+            val min = 1024 * 10
+            if (fileSize < min) {
+                val size = fileSize / 1024f
+                String.format("发现新版本：%s v%s（%.2fKB）", appName, version.versionName, size)
+            } else {
+                val size = formatSizeInMB(fileSize)
+                String.format("发现新版本：%s v%s（%.2fMB）", appName, version.versionName, size)//保留2位小数，10KB以下显示为0.00MB
+            }
         } else {
             String.format("发现新版本：%s v%s", appName, version.versionName)
         }
