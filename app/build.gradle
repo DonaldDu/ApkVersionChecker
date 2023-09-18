@@ -9,7 +9,7 @@ android {
         minSdkVersion 16
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 31
+        versionCode 36
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         packagingOptions {

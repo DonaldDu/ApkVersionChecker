@@ -9,17 +9,18 @@ import android.net.ConnectivityManager
 import com.dhy.avc.format.PatchVersion
 import com.dhy.xintent.ActivityKiller
 import com.dhy.xintent.XIntent
-import com.github.sisong.ApkPatch
+import com.github.sisong.HPatch
 import com.liulishuo.okdownload.DownloadTask
 import com.liulishuo.okdownload.core.cause.EndCause
 import com.liulishuo.okdownload.core.listener.DownloadListener2
 import java.io.File
+import java.lang.ref.WeakReference
 
 
 object VersionUtil {
     private var version: IVersion? = null
     private var setting: IUpdateSetting? = null
-    private var networkReceiver: NetworkConnectChangedReceiver? = null
+    private var networkReceiverRef: WeakReference<NetworkConnectChangedReceiver>? = null
 
     @JvmStatic
     fun showVersion(activity: Activity, version: IVersion?, setting: IUpdateSetting? = null) {
@@ -67,11 +68,11 @@ object VersionUtil {
                 if (cause == EndCause.COMPLETED) {
                     unregisterNetworkReceiver(activity)
 
-                    patchApk(activity, setting.getMaxPatchMemory(), version, task.file!!, {
+                    patchApk(activity, version, task.file!!, {
                         showVersion(activity, version, setting)
-                    }, {
+                    }) {
                         download(activity, version, setting, retryCount)
-                    })
+                    }
                 } else {
                     if (retryCount > 0) {
                         download(activity, version, setting, retryCount - 1)
@@ -85,22 +86,22 @@ object VersionUtil {
         return !PatchVersion.invalidFormat(name)
     }
 
-    internal fun patchApk(context: Context, maxMemory: Long, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
+    internal fun patchApk(context: Context, version: IVersion, file: File, installApk: (File) -> Unit, retry: () -> Unit) {
         if (file.isPathFile()) {
-            patchApkInNewThread(context, maxMemory, version, file, installApk, retry)
+            patchApkInNewThread(context, version, file, installApk, retry)
         } else {
             file.deleteOldApkVersions()
             installApk(file)
         }
     }
 
-    private fun patchApkInNewThread(context: Context, maxMemory: Long, version: IVersion, patch: File, installApk: (File) -> Unit, retry: () -> Unit) {
+    private fun patchApkInNewThread(context: Context, version: IVersion, patch: File, installApk: (File) -> Unit, retry: () -> Unit) {
         val oldApkPath = context.getInstalledApkInfo()!!.applicationInfo.sourceDir
-        var newApk = File.createTempFile("bs_merge", ".apk")
+        var newApk = File.createTempFile("merge", ".apk")
         Thread {
             val tmp = File(context.cacheDir, "tmp_${System.currentTimeMillis()}")
-
-            val patchOk = ApkPatch.patch(oldApkPath, patch.absolutePath, newApk.absolutePath, maxMemory, tmp.absolutePath, 3) == 0
+            val patchCode = HPatch.patch(oldApkPath, patch.absolutePath, newApk.absolutePath)
+            val patchOk = patchCode == 0
             val md5Ok = patchOk && PatchVersion.parse(version.patchUrl!!).matchMd5(newApk.md5())
             tmp.deleteRecursively()
             if (md5Ok) {
@@ -119,18 +120,20 @@ object VersionUtil {
     }
 
     private fun unregisterNetworkReceiver(context: Context) {
-        if (networkReceiver != null) {
-            context.unregisterReceiver(networkReceiver)
-            networkReceiver = null
+        if (networkReceiverRef?.get() != null) {
+            context.unregisterReceiver(networkReceiverRef!!.get())
+            networkReceiverRef = null
         }
     }
 
     private fun registerNetworkReceiver(activity: Activity) {
-        if (networkReceiver == null) {
-            networkReceiver = NetworkConnectChangedReceiver(activity)
+        if (networkReceiverRef?.get() == null) {
+            val networkReceiver = NetworkConnectChangedReceiver(activity)
+
             @Suppress("DEPRECATION")
             val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
             activity.registerReceiver(networkReceiver, filter)
+            networkReceiverRef = WeakReference(networkReceiver)
         }
     }
 

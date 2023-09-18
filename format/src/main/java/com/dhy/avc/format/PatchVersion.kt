@@ -6,7 +6,7 @@ class PatchVersion {
 
         //差分包文件名：{oldVersionName}_{oldVersionCode}v{newVersionName}_{newVersionCode}-{newApkMd5}
         //eg -> 1.0@258v1.1@300-54621B46C1664DB5BA7127D8F22AFF00.bsPatch.apk
-        private val reg by lazy { "\\W?($versionReg)v($versionReg)-([\\da-zA-Z]{32})\\.bsPatch\\.apk".toRegex() }
+        private val reg by lazy { "\\W?($versionReg)v($versionReg)-([\\da-zA-Z]{32})\\.([\\da-zA-Z]+)\\.apk".toRegex() }
         fun invalidFormat(patchFileUrl: String?): Boolean {
             if (patchFileUrl.isNullOrEmpty()) return true
             return reg.find(patchFileUrl) == null
@@ -17,8 +17,8 @@ class PatchVersion {
         }
 
         @JvmStatic
-        fun format(v: PatchVersion): String {
-            return String.format("%s@%dv%s@%d-%s.bsPatch.apk", v.oldVersionName, v.oldVersion, v.newVersionName, v.newVersion, v.newApkMd5?.lowercase())
+        fun format(v: PatchVersion, patchExt: String): String {
+            return String.format("%s@%dv%s@%d-%s.$patchExt.apk", v.oldVersionName, v.oldVersion, v.newVersionName, v.newVersion, v.newApkMd5?.lowercase())
         }
 
         @JvmStatic
@@ -37,7 +37,8 @@ class PatchVersion {
                     newVersion = nc.last().toInt()
 
                     newApkMd5 = m.groupValues[3]
-                    fileName = format(this)
+                    val patchExt = m.groupValues[4]
+                    fileName = format(this, patchExt)
                 }
             }
         }
