@@ -156,6 +156,8 @@ class NewUpdateActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == INSTALL_PERMISS_CODE) {
@@ -182,14 +184,14 @@ class NewUpdateActivity : AppCompatActivity() {
                 println("EndCause $cause")
                 realCause?.printStackTrace()
                 if (cause == EndCause.COMPLETED) {
-                    VersionUtil.patchApk(context, setting.getMaxPatchMemory(), version, task.file!!, {
+                    VersionUtil.patchApk(context, version, task.file!!, {
                         apkFile = it
 
                         if (showLog) Log.i(TAG, "downloadApk end installApk")
                         startInstallApk(it)
-                    }, {
+                    }) {
                         startRetry()//合成补丁检验未通过后，返回调用此方法时，需要在UI线程调用。
-                    })
+                    }
                 } else {
                     if (retryCount < setting.maxRetryCount()) {
                         retryCount++
@@ -251,6 +253,7 @@ class NewUpdateActivity : AppCompatActivity() {
             }
         }
 
+        @Suppress("DEPRECATION")
         fun isNetworkAvailable(): Boolean {
             return cm.activeNetworkInfo?.isConnected == true
         }
